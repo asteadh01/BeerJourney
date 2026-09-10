@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email in [
+          'brewer-one@example.com',
+          'brewer-two@example.com'
+        ];
+    }
+
+    // Batch photos: anyone can view, only the two brewers can upload.
+    match /brews/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}
