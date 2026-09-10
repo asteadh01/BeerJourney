@@ -49,3 +49,10 @@ export interface Comment {
   text: string;
   createdAt: number;
 }
+
+export interface Profile {
+  displayName: string;
+  bio: string;
+  photoURL?: string;
+  updatedAt: number;
+}

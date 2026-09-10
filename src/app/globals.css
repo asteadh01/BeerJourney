@@ -720,6 +720,24 @@ a {
   font-size: 1rem;
 }
 
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--line);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display), serif;
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--copper-deep);
+}
+
 /* ---- admin ---- */
 .admin-shell {
   display: grid;

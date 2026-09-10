@@ -15,5 +15,13 @@ service firebase.storage {
       allow read: if true;
       allow write: if isAdmin() && request.resource.size < 10 * 1024 * 1024;
     }
+
+    // Profile photos: public read, each brewer can only upload their own.
+    match /profiles/{uid}/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && request.auth.uid == uid &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
   }
 }

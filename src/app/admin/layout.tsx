@@ -11,6 +11,7 @@ const links = [
   { href: "/admin", label: "Panel" },
   { href: "/admin/brews", label: "Cervezas" },
   { href: "/admin/comments", label: "Comentarios" },
+  { href: "/admin/profile", label: "Perfil" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -34,8 +35,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="admin-shell">
       <aside className="admin-side">
         <div className="who-badge">
-          <div className="avatar">{(user.email ?? "?").slice(0, 1).toUpperCase()}</div>
-          {user.email}
+          <div className="avatar" style={user.photoURL ? { backgroundImage: `url(${user.photoURL})`, backgroundSize: "cover" } : undefined}>
+            {!user.photoURL && (user.displayName ?? user.email ?? "?").slice(0, 1).toUpperCase()}
+          </div>
+          {user.displayName ?? user.email}
         </div>
         {links.map((link) => (
           <Link key={link.href} href={link.href} className={`admin-link ${pathname === link.href ? "active" : ""}`}>

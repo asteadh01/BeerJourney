@@ -18,6 +18,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Brewer profile (display name, bio, avatar): public read for the About
+    // page, but each brewer can only write their own document.
+    match /profiles/{uid} {
+      allow read: if true;
+      allow write: if isAdmin() && request.auth.uid == uid;
+    }
+
     match /comments/{commentId} {
       allow read: if true;
       allow create: if request.resource.data.name is string &&
