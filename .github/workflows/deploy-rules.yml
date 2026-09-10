@@ -1,8 +1,10 @@
 name: Deploy Firestore & Storage rules
 
-# The Next.js app itself is NOT deployed here — see deploy-app.yml for
-# the App Hosting rollout. This workflow only covers Firestore
-# rules/indexes and Storage rules, which App Hosting doesn't touch.
+# The Next.js app itself is NOT deployed here — Firebase App Hosting
+# deploys it via its own native GitHub connection (Firebase Console ->
+# App Hosting), configured separately, and won't show up in this Actions
+# tab. This workflow only covers Firestore rules/indexes and Storage
+# rules, which App Hosting doesn't touch.
 on:
   push:
     branches: [main]
