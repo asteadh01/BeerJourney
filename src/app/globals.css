@@ -758,9 +758,30 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px 18px;
+  padding: 9px 10px;
+  margin-bottom: 10px;
   font-size: 0.8rem;
   font-weight: 600;
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-radius: 7px;
+  min-width: 0;
+}
+
+.admin-side .who-badge:hover {
+  background: var(--surface);
+}
+
+.admin-side .who-badge.active {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.admin-side .who-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .admin-link {
