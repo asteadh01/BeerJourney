@@ -1,0 +1,52 @@
+name: Deploy Firestore & Storage rules
+
+# The Next.js app itself is NOT deployed here — Firebase App Hosting
+# deploys it via its own native GitHub connection (Firebase Console ->
+# App Hosting), configured separately, and won't show up in this Actions
+# tab. This workflow only covers Firestore rules/indexes and Storage
+# rules, which App Hosting doesn't touch.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "firestore.rules"
+      - "firestore.indexes.json"
+      - "storage.rules"
+      - ".github/workflows/deploy-rules.yml"
+
+concurrency:
+  group: deploy-rules-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # required for Workload Identity Federation — no long-lived key stored in this repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # One-time gcloud setup that produced these two values — a Workload
+      # Identity Pool + GitHub OIDC provider scoped to this exact repo,
+      # and a deploy service account bound to it with only
+      # firebaserules.admin + datastore.indexAdmin. Neither value below is
+      # a secret in the way a key file is; both are safe to commit.
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/533689731702/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "github-deployer@beerjourney-25dac.iam.gserviceaccount.com"
+
+      - name: Deploy Firestore rules, indexes, and Storage rules
+        run: npx firebase deploy --only firestore:rules,firestore:indexes,storage --project beerjourney-25dac --non-interactive
