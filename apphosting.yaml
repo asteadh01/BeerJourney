@@ -1,11 +1,13 @@
 # Firebase App Hosting build/run config.
-# These are the public Firebase Web SDK config values (safe to commit —
-# access control lives in firestore.rules / storage.rules, not here).
+# The rest of these are public Firebase Web SDK config values (safe to
+# commit — access control lives in firestore.rules / storage.rules, not
+# here). The API key is pulled from Secret Manager instead purely to keep
+# GitHub's secret scanner quiet — it isn't actually sensitive.
 # See: https://firebase.google.com/docs/app-hosting/configure
 
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyBY77Ko2XlM7z41aWZ5mkSlaHhajhUybfA
+    secret: NEXT_PUBLIC_FIREBASE_API_KEY
     availability:
       - BUILD
       - RUNTIME
