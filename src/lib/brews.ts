@@ -19,16 +19,20 @@ const brewsCol = collection(db, "brews");
 
 export function watchPublishedBrews(cb: (brews: Brew[]) => void) {
   const q = query(brewsCol, where("status", "==", "published"), orderBy("batchNumber", "desc"));
-  return onSnapshot(q, (snap) => {
-    cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew));
-  });
+  return onSnapshot(
+    q,
+    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew)),
+    (error) => console.error("watchPublishedBrews failed:", error),
+  );
 }
 
 export function watchAllBrews(cb: (brews: Brew[]) => void) {
   const q = query(brewsCol, orderBy("batchNumber", "desc"));
-  return onSnapshot(q, (snap) => {
-    cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew));
-  });
+  return onSnapshot(
+    q,
+    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew)),
+    (error) => console.error("watchAllBrews failed:", error),
+  );
 }
 
 export async function getBrewBySlug(slug: string): Promise<Brew | null> {
@@ -62,9 +66,11 @@ export async function deleteBrew(id: string) {
 
 export function watchComments(brewId: string, cb: (comments: Comment[]) => void) {
   const q = query(collection(db, "comments"), where("brewId", "==", brewId), orderBy("createdAt", "desc"));
-  return onSnapshot(q, (snap) => {
-    cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Comment));
-  });
+  return onSnapshot(
+    q,
+    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Comment)),
+    (error) => console.error("watchComments failed:", error),
+  );
 }
 
 export async function addComment(brewId: string, name: string, text: string) {
