@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { createBrew, updateBrew } from "@/lib/brews";
-import type { Brew, HopAddition, MaltBillItem, ProcessStep } from "@/lib/types";
+import type { Brew, HopAddition, MaltBillItem } from "@/lib/types";
 
 function slugify(title: string): string {
   return title

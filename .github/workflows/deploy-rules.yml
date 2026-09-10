@@ -1,18 +1,20 @@
 name: Deploy Firestore & Storage rules
 
+# Runs on every push to main — i.e. every merge of a PR that passed the
+# required checks in ci.yml, once branch protection on main requires
+# those checks. This workflow does NOT gate on ci.yml itself; branch
+# protection is what stops an untested merge from reaching this trigger
+# at all.
+#
 # The Next.js app itself is NOT deployed here — Firebase App Hosting
 # deploys it via its own native GitHub connection (Firebase Console ->
 # App Hosting), configured separately, and won't show up in this Actions
 # tab. This workflow only covers Firestore rules/indexes and Storage
-# rules, which App Hosting doesn't touch.
+# rules, which App Hosting doesn't touch. Deploying unchanged rules is a
+# harmless no-op — trading that for a visible confirmation on every push.
 on:
   push:
     branches: [main]
-    paths:
-      - "firestore.rules"
-      - "firestore.indexes.json"
-      - "storage.rules"
-      - ".github/workflows/deploy-rules.yml"
 
 concurrency:
   group: deploy-rules-production

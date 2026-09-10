@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SiteNav } from "@/components/SiteNav";
 import { addComment, getBrewBySlug, watchComments } from "@/lib/brews";
@@ -12,21 +12,26 @@ function BrewDetail() {
   const params = useSearchParams();
   const slug = params.get("slug") ?? "";
 
-  const [brew, setBrew] = useState<Brew | null | undefined>(undefined);
+  const sample = useMemo(() => sampleBrews.find((b) => b.slug === slug), [slug]);
+  const [fetchResult, setFetchResult] = useState<{ slug: string; brew: Brew | null } | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [posting, setPosting] = useState(false);
 
+  const fetchedBrew = fetchResult?.slug === slug ? fetchResult.brew : undefined;
+  const brew = sample ?? fetchedBrew;
+
   useEffect(() => {
-    if (!slug) return;
-    const sample = sampleBrews.find((b) => b.slug === slug);
-    if (sample) {
-      setBrew(sample);
-      return;
-    }
-    getBrewBySlug(slug).then(setBrew);
-  }, [slug]);
+    if (!slug || sample) return;
+    let cancelled = false;
+    getBrewBySlug(slug).then((result) => {
+      if (!cancelled) setFetchResult({ slug, brew: result });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, sample]);
 
   useEffect(() => {
     if (!brew || brew.id.startsWith("sample-")) return;
