@@ -1,0 +1,42 @@
+name: Deploy App Hosting backend
+
+# Drives the App Hosting rollout ourselves instead of relying on its
+# native GitHub auto-deploy, so every deploy is visible in this Actions
+# tab. The backend's own "live branch" auto-rollout must stay disabled
+# in the Firebase Console (App Hosting -> beerjourney -> Settings) or
+# every push would trigger two rollouts.
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-app-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # required for Workload Identity Federation — no long-lived key stored in this repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/533689731702/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "github-deployer@beerjourney-25dac.iam.gserviceaccount.com"
+
+      - name: Roll out App Hosting backend
+        run: npx firebase apphosting:rollouts:create beerjourney --git-branch main --force --project beerjourney-25dac
