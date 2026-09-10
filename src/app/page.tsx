@@ -1,113 +1,42 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
-import { watchPublishedBrews } from "@/lib/brews";
-import { sampleBrews } from "@/lib/sampleBrews";
-import type { Brew } from "@/lib/types";
 
 export default function HomePage() {
-  const [brews, setBrews] = useState<Brew[] | null>(null);
-
-  useEffect(() => {
-    const unsub = watchPublishedBrews(setBrews);
-    return unsub;
-  }, []);
-
-  const loaded = brews ?? [];
-  const showingSample = brews !== null && brews.length === 0;
-  const list = showingSample ? sampleBrews : loaded;
-  const latest = list[0];
-
-  const avgAbv = list.length ? (list.reduce((sum, b) => sum + b.abv, 0) / list.length).toFixed(1) : "—";
-  const totalComments = list.length; // placeholder aggregate until comment counts are denormalized
-
   return (
     <>
-      <SiteNav active="brews" />
+      <SiteNav active="home" />
       <div className="page">
-        {latest && (
-          <section className="hero">
-            <div>
-              <span className="eyebrow">
-                Latest batch · Batch №{String(latest.batchNumber).padStart(3, "0")}
-              </span>
-              <h1>{latest.title}</h1>
-              <p>{latest.summary}</p>
-              <div className="hero-actions">
-                <Link className="btn primary" href={`/brew?slug=${latest.slug}`}>
-                  Read the recipe
-                </Link>
-                {latest.youtubeUrl && (
-                  <a className="btn" href={latest.youtubeUrl} target="_blank" rel="noopener noreferrer">
-                    Watch brew day
-                  </a>
-                )}
-              </div>
+        <section className="hero">
+          <div>
+            <span className="eyebrow">Our story</span>
+            <h1>Two friends, two kitchens, one questionable first batch</h1>
+            <p>
+              It started with a cheap starter kit, a stovetop, and way too much confidence. We wanted to know what it
+              actually takes to make beer from scratch — no shortcuts, just us, our houses, and whatever equipment we
+              could scrounge together. This is the record of that: what we brewed, what went wrong, what we&apos;d do
+              again.
+            </p>
+            <div className="hero-actions">
+              <Link className="btn primary" href="/brews">
+                See the brews
+              </Link>
+              <Link className="btn" href="/experiments">
+                Check the experiments
+              </Link>
             </div>
-            <div
-              className="hero-visual"
-              style={latest.heroImageUrl ? { backgroundImage: `url(${latest.heroImageUrl})` } : undefined}
-            />
-          </section>
-        )}
-
-        <section className="stats-strip">
-          <div className="stat">
-            <div className="n">{list.length}</div>
-            <div className="l">Batches logged</div>
           </div>
-          <div className="stat">
-            <div className="n">{avgAbv}%</div>
-            <div className="l">Avg. ABV</div>
-          </div>
-          <div className="stat">
-            <div className="n">{totalComments}</div>
-            <div className="l">Batches with notes</div>
-          </div>
-          <div className="stat">
-            <div className="n">2</div>
-            <div className="l">Brewers</div>
-          </div>
+          <div className="hero-visual" />
         </section>
 
         <div className="section-head">
-          <h3>{showingSample ? "Example brew (add your first batch in the admin panel)" : "Recent brews"}</h3>
+          <h3>What this place is</h3>
         </div>
-
-        {list.length === 0 && brews !== null ? (
-          <div className="empty-state">No brews published yet.</div>
-        ) : (
-          <div className="batch-grid">
-            {list.map((brew) => (
-              <Link key={brew.id} className="batch-card" href={`/brew?slug=${brew.slug}`}>
-                <div
-                  className="batch-thumb"
-                  style={brew.heroImageUrl ? { backgroundImage: `url(${brew.heroImageUrl})` } : undefined}
-                >
-                  <span className="tag">
-                    №{String(brew.batchNumber).padStart(3, "0")} · {brew.style}
-                  </span>
-                </div>
-                <h4>{brew.title}</h4>
-                <div className="batch-meta">
-                  <span>
-                    <b>{brew.abv}%</b> ABV
-                  </span>
-                  <span>
-                    <b>{brew.ibu}</b> IBU
-                  </span>
-                  <span>{brew.brewedOn}</span>
-                </div>
-                <p className="batch-desc">{brew.summary}</p>
-                <div className="batch-footer">
-                  <span className="chip">{brew.status === "published" ? "Published" : "Draft"}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <p style={{ color: "var(--ink-dim)", maxWidth: "60ch", lineHeight: 1.7, marginTop: 8 }}>
+          This is placeholder copy for now — the real story goes here once we&apos;ve written it. The short version:
+          two homebrewers, tracking every batch, every recipe, and every weird idea worth trying along the way. Head
+          over to <Link href="/brews">Brews</Link> for the full log, or <Link href="/experiments">Experiments</Link>{" "}
+          for the stuff that doesn&apos;t fit anywhere else.
+        </p>
       </div>
     </>
   );
