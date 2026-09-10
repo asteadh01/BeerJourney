@@ -8,9 +8,9 @@ import { auth } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
 
 const links = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/brews", label: "Brews" },
-  { href: "/admin/comments", label: "Comments" },
+  { href: "/admin", label: "Panel" },
+  { href: "/admin/brews", label: "Cervezas" },
+  { href: "/admin/comments", label: "Comentarios" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (loading || !user) {
     return (
       <div className="page">
-        <p style={{ padding: "40px 0", color: "var(--ink-dim)" }}>Checking sign-in…</p>
+        <p style={{ padding: "40px 0", color: "var(--ink-dim)" }}>Verificando sesión…</p>
       </div>
     );
   }
@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
         ))}
         <button className="admin-link" style={{ marginTop: "auto" }} onClick={() => signOut(auth)}>
-          Sign out
+          Cerrar sesión
         </button>
       </aside>
       <main className="admin-main">{children}</main>

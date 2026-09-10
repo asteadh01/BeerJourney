@@ -16,24 +16,24 @@ export default function AdminCommentsPage() {
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Delete this comment?")) return;
+    if (!confirm("¿Eliminar este comentario?")) return;
     await deleteDoc(doc(db, "comments", id));
   }
 
   return (
     <>
       <div className="admin-head">
-        <h2>Comments</h2>
+        <h2>Comentarios</h2>
       </div>
       {comments.length === 0 ? (
-        <div className="empty-state">No taster notes yet.</div>
+        <div className="empty-state">Todavía no hay notas de cata.</div>
       ) : (
         <table className="admin-table">
           <tbody>
             <tr>
-              <th>Name</th>
-              <th>Note</th>
-              <th>Posted</th>
+              <th>Nombre</th>
+              <th>Nota</th>
+              <th>Fecha</th>
               <th></th>
             </tr>
             {comments.map((c) => (
@@ -43,7 +43,7 @@ export default function AdminCommentsPage() {
                 <td>{new Date(c.createdAt).toLocaleDateString()}</td>
                 <td>
                   <button className="btn danger" onClick={() => remove(c.id)}>
-                    Remove
+                    Eliminar
                   </button>
                 </td>
               </tr>

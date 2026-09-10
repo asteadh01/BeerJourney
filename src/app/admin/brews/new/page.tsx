@@ -4,7 +4,7 @@ export default function NewBrewPage() {
   return (
     <>
       <div className="admin-head">
-        <h2>New batch</h2>
+        <h2>Nueva cocción</h2>
       </div>
       <BrewForm />
     </>

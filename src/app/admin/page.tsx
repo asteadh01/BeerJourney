@@ -16,27 +16,28 @@ export default function AdminDashboard() {
   return (
     <>
       <div className="admin-head">
-        <h2>Dashboard</h2>
+        <h2>Panel</h2>
         <Link className="btn primary" href="/admin/brews/new">
-          + New batch
+          + Nueva cocción
         </Link>
       </div>
       <div className="stats-strip" style={{ border: "1px solid var(--line)", borderRadius: 10, marginBottom: 24 }}>
         <div className="stat">
           <div className="n">{brews.length}</div>
-          <div className="l">Total batches</div>
+          <div className="l">Total de cocciones</div>
         </div>
         <div className="stat">
           <div className="n">{published}</div>
-          <div className="l">Published</div>
+          <div className="l">Publicadas</div>
         </div>
         <div className="stat">
           <div className="n">{drafts}</div>
-          <div className="l">Drafts</div>
+          <div className="l">Borradores</div>
         </div>
       </div>
       <p style={{ color: "var(--ink-dim)", fontSize: ".88rem" }}>
-        Manage recipes, photos and video links under <b>Brews</b>. Moderate public tasting notes under <b>Comments</b>.
+        Administrá recetas, fotos y videos en <b>Cervezas</b>. Moderá las notas de cata públicas en{" "}
+        <b>Comentarios</b>.
       </p>
     </>
   );

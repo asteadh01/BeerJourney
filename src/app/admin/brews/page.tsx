@@ -15,28 +15,28 @@ export default function AdminBrewsPage() {
   }
 
   async function remove(brew: Brew) {
-    if (!confirm(`Delete "${brew.title}"? This can't be undone.`)) return;
+    if (!confirm(`¿Eliminar "${brew.title}"? Esta acción no se puede deshacer.`)) return;
     await deleteBrew(brew.id);
   }
 
   return (
     <>
       <div className="admin-head">
-        <h2>Brews</h2>
+        <h2>Cervezas</h2>
         <Link className="btn primary" href="/admin/brews/new">
-          + New batch
+          + Nueva cocción
         </Link>
       </div>
       {brews.length === 0 ? (
-        <div className="empty-state">No batches yet. Log your first brew.</div>
+        <div className="empty-state">Todavía no hay cocciones. Registrá tu primera cerveza.</div>
       ) : (
         <table className="admin-table">
           <tbody>
             <tr>
-              <th>Batch</th>
-              <th>Style</th>
+              <th>Cocción</th>
+              <th>Estilo</th>
               <th>ABV</th>
-              <th>Status</th>
+              <th>Estado</th>
               <th></th>
             </tr>
             {brews.map((brew) => (
@@ -52,19 +52,19 @@ export default function AdminBrewsPage() {
                 <td>{brew.abv}%</td>
                 <td>
                   <span className={`status-pill ${brew.status}`}>
-                    {brew.status === "published" ? "Published" : "Draft"}
+                    {brew.status === "published" ? "Publicada" : "Borrador"}
                   </span>
                 </td>
                 <td>
                   <div className="row-actions">
                     <Link className="btn" href={`/admin/brews/edit?id=${brew.id}`}>
-                      Edit
+                      Editar
                     </Link>
                     <button className="btn" onClick={() => togglePublish(brew)}>
-                      {brew.status === "published" ? "Unpublish" : "Publish"}
+                      {brew.status === "published" ? "Despublicar" : "Publicar"}
                     </button>
                     <button className="btn danger" onClick={() => remove(brew)}>
-                      Delete
+                      Eliminar
                     </button>
                   </div>
                 </td>

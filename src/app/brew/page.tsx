@@ -50,7 +50,7 @@ function BrewDetail() {
       <>
         <SiteNav />
         <div className="page">
-          <p style={{ padding: "40px 0", color: "var(--ink-dim)" }}>Loading…</p>
+          <p style={{ padding: "40px 0", color: "var(--ink-dim)" }}>Cargando…</p>
         </div>
       </>
     );
@@ -61,7 +61,7 @@ function BrewDetail() {
       <>
         <SiteNav />
         <div className="page">
-          <div className="empty-state">Couldn&apos;t find that brew.</div>
+          <div className="empty-state">No encontramos esa cocción.</div>
         </div>
       </>
     );
@@ -78,7 +78,7 @@ function BrewDetail() {
             className="detail-img"
             style={brew.heroImageUrl ? { backgroundImage: `url(${brew.heroImageUrl})` } : undefined}
           >
-            <span className="badge">Batch №{String(brew.batchNumber).padStart(3, "0")}</span>
+            <span className="badge">Cocción №{String(brew.batchNumber).padStart(3, "0")}</span>
           </div>
           <div className="detail-copy">
             <span className="style">{brew.style}</span>
@@ -107,7 +107,7 @@ function BrewDetail() {
 
         <section className="detail-body">
           <div className="detail-col">
-            <h3>Brew-day process</h3>
+            <h3>Proceso del día de cocción</h3>
             <ol className="process-steps">
               {brew.processSteps.map((step) => (
                 <li key={step.order}>
@@ -118,17 +118,17 @@ function BrewDetail() {
             </ol>
             {embedUrl && (
               <div className="yt-embed">
-                <iframe src={embedUrl} title={`${brew.title} brew day video`} allowFullScreen />
+                <iframe src={embedUrl} title={`Video del día de cocción — ${brew.title}`} allowFullScreen />
               </div>
             )}
           </div>
           <div className="detail-col">
-            <h3>Malt &amp; hop bill</h3>
+            <h3>Maltas y lúpulos</h3>
             <table className="malt-bill">
               <tbody>
                 <tr>
-                  <th>Ingredient</th>
-                  <th>Amount</th>
+                  <th>Ingrediente</th>
+                  <th>Cantidad</th>
                 </tr>
                 {brew.maltBill.map((item) => (
                   <tr key={item.ingredient}>
@@ -148,8 +148,10 @@ function BrewDetail() {
         </section>
 
         <section className="comments-block">
-          <h3 style={{ fontSize: "1rem", marginBottom: 6 }}>Taster notes</h3>
-          {comments.length === 0 && <p style={{ color: "var(--ink-dim)", fontSize: ".85rem" }}>No notes yet — be the first to try it.</p>}
+          <h3 style={{ fontSize: "1rem", marginBottom: 6 }}>Notas de cata</h3>
+          {comments.length === 0 && (
+            <p style={{ color: "var(--ink-dim)", fontSize: ".85rem" }}>Todavía no hay notas — sé el primero en probarla.</p>
+          )}
           {comments.map((c) => (
             <div className="comment" key={c.id}>
               <div className="avatar">{c.name.slice(0, 1).toUpperCase()}</div>
@@ -164,7 +166,7 @@ function BrewDetail() {
           ))}
           <form className="comment-form" onSubmit={handleSubmit}>
             <input
-              placeholder="Your name"
+              placeholder="Tu nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
               style={{ maxWidth: 160 }}
@@ -172,14 +174,14 @@ function BrewDetail() {
               required
             />
             <input
-              placeholder="Leave a note on this batch…"
+              placeholder="Dejá una nota sobre esta cocción…"
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={500}
               required
             />
             <button className="btn primary" style={{ borderRadius: 100 }} type="submit" disabled={posting}>
-              {posting ? "Posting…" : "Post"}
+              {posting ? "Publicando…" : "Publicar"}
             </button>
           </form>
         </section>

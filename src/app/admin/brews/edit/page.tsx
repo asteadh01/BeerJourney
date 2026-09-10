@@ -16,13 +16,13 @@ function EditBrewForm() {
     getBrewById(id).then(setBrew);
   }, [id]);
 
-  if (brew === undefined) return <p style={{ color: "var(--ink-dim)" }}>Loading…</p>;
-  if (brew === null) return <div className="empty-state">Batch not found.</div>;
+  if (brew === undefined) return <p style={{ color: "var(--ink-dim)" }}>Cargando…</p>;
+  if (brew === null) return <div className="empty-state">Cocción no encontrada.</div>;
 
   return (
     <>
       <div className="admin-head">
-        <h2>Edit batch</h2>
+        <h2>Editar cocción</h2>
       </div>
       <BrewForm brewId={id} initial={brew} />
     </>

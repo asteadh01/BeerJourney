@@ -108,15 +108,15 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
     <form onSubmit={handleSubmit}>
       <div className="field-row">
         <div className="field">
-          <label htmlFor="title">Title</label>
+          <label htmlFor="title">Título</label>
           <input id="title" value={draft.title} onChange={(e) => set("title", e.target.value)} required />
         </div>
         <div className="field">
-          <label htmlFor="style">Style</label>
+          <label htmlFor="style">Estilo</label>
           <input id="style" value={draft.style} onChange={(e) => set("style", e.target.value)} required />
         </div>
         <div className="field">
-          <label htmlFor="batchNumber">Batch #</label>
+          <label htmlFor="batchNumber">N.º de cocción</label>
           <input
             id="batchNumber"
             type="number"
@@ -129,7 +129,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
 
       <div className="field-row">
         <div className="field">
-          <label htmlFor="brewedOn">Brewed on</label>
+          <label htmlFor="brewedOn">Fecha de cocción</label>
           <input
             id="brewedOn"
             type="date"
@@ -138,25 +138,30 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           />
         </div>
         <div className="field">
-          <label htmlFor="status">Status</label>
+          <label htmlFor="status">Estado</label>
           <select id="status" value={draft.status} onChange={(e) => set("status", e.target.value as Draft["status"])}>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            <option value="draft">Borrador</option>
+            <option value="published">Publicada</option>
           </select>
         </div>
         <div className="field">
-          <label htmlFor="slug">URL slug</label>
-          <input id="slug" placeholder="auto from title" value={draft.slug} onChange={(e) => set("slug", e.target.value)} />
+          <label htmlFor="slug">Slug de URL</label>
+          <input
+            id="slug"
+            placeholder="automático a partir del título"
+            value={draft.slug}
+            onChange={(e) => set("slug", e.target.value)}
+          />
         </div>
       </div>
 
       <div className="field">
-        <label htmlFor="summary">One-line summary (shown on cards)</label>
+        <label htmlFor="summary">Resumen breve (se muestra en las tarjetas)</label>
         <input id="summary" value={draft.summary} onChange={(e) => set("summary", e.target.value)} maxLength={140} required />
       </div>
 
       <div className="field">
-        <label htmlFor="description">Full description</label>
+        <label htmlFor="description">Descripción completa</label>
         <textarea id="description" value={draft.description} onChange={(e) => set("description", e.target.value)} required />
       </div>
 
@@ -181,7 +186,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
 
       <div className="field-row">
         <div className="field">
-          <label htmlFor="mashTempF">Mash temp °F</label>
+          <label htmlFor="mashTempF">Temperatura de maceración °F</label>
           <input
             id="mashTempF"
             type="number"
@@ -190,7 +195,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           />
         </div>
         <div className="field">
-          <label htmlFor="fermentationDays">Fermentation days</label>
+          <label htmlFor="fermentationDays">Días de fermentación</label>
           <input
             id="fermentationDays"
             type="number"
@@ -201,52 +206,52 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
       </div>
 
       <div className="field">
-        <label htmlFor="heroImageUrl">Hero image URL</label>
+        <label htmlFor="heroImageUrl">URL de imagen principal</label>
         <input id="heroImageUrl" value={draft.heroImageUrl ?? ""} onChange={(e) => set("heroImageUrl", e.target.value)} placeholder="https://…" />
       </div>
 
       <div className="field">
-        <label htmlFor="youtubeUrl">Brew-day YouTube URL</label>
+        <label htmlFor="youtubeUrl">URL de YouTube del día de cocción</label>
         <input id="youtubeUrl" value={draft.youtubeUrl ?? ""} onChange={(e) => set("youtubeUrl", e.target.value)} placeholder="https://youtu.be/…" />
       </div>
 
       <div className="field">
-        <label>Malt &amp; grain bill</label>
+        <label>Maltas y granos</label>
         {draft.maltBill.map((item, i) => (
           <div className="repeat-row" key={i}>
-            <input placeholder="Ingredient" value={item.ingredient} onChange={(e) => updateMalt(i, "ingredient", e.target.value)} />
-            <input placeholder="Amount" value={item.amount} onChange={(e) => updateMalt(i, "amount", e.target.value)} />
+            <input placeholder="Ingrediente" value={item.ingredient} onChange={(e) => updateMalt(i, "ingredient", e.target.value)} />
+            <input placeholder="Cantidad" value={item.amount} onChange={(e) => updateMalt(i, "amount", e.target.value)} />
             <button type="button" className="icon-btn" onClick={() => set("maltBill", draft.maltBill.filter((_, idx) => idx !== i))}>
               ×
             </button>
           </div>
         ))}
         <button type="button" className="btn" style={{ marginTop: 8 }} onClick={() => set("maltBill", [...draft.maltBill, { ingredient: "", amount: "" }])}>
-          + Add ingredient
+          + Agregar ingrediente
         </button>
       </div>
 
       <div className="field">
-        <label>Hop schedule</label>
+        <label>Lúpulos</label>
         {draft.hopSchedule.map((item, i) => (
           <div className="repeat-row" key={i}>
-            <input placeholder="Hop" value={item.hop} onChange={(e) => updateHop(i, "hop", e.target.value)} />
-            <input placeholder="Timing (e.g. 60 min)" value={item.timing} onChange={(e) => updateHop(i, "timing", e.target.value)} />
+            <input placeholder="Lúpulo" value={item.hop} onChange={(e) => updateHop(i, "hop", e.target.value)} />
+            <input placeholder="Momento (ej. 60 min)" value={item.timing} onChange={(e) => updateHop(i, "timing", e.target.value)} />
             <button type="button" className="icon-btn" onClick={() => set("hopSchedule", draft.hopSchedule.filter((_, idx) => idx !== i))}>
               ×
             </button>
           </div>
         ))}
         <button type="button" className="btn" style={{ marginTop: 8 }} onClick={() => set("hopSchedule", [...draft.hopSchedule, { hop: "", timing: "" }])}>
-          + Add hop addition
+          + Agregar lúpulo
         </button>
       </div>
 
       <div className="field">
-        <label>Brew-day process steps</label>
+        <label>Pasos del día de cocción</label>
         {draft.processSteps.map((step, i) => (
           <div className="repeat-row" style={{ gridTemplateColumns: "1fr auto" }} key={i}>
-            <input placeholder={`Step ${i + 1}`} value={step.text} onChange={(e) => updateStep(i, e.target.value)} />
+            <input placeholder={`Paso ${i + 1}`} value={step.text} onChange={(e) => updateStep(i, e.target.value)} />
             <button type="button" className="icon-btn" onClick={() => set("processSteps", draft.processSteps.filter((_, idx) => idx !== i))}>
               ×
             </button>
@@ -258,13 +263,13 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           style={{ marginTop: 8 }}
           onClick={() => set("processSteps", [...draft.processSteps, { order: draft.processSteps.length + 1, text: "" }])}
         >
-          + Add step
+          + Agregar paso
         </button>
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 26 }}>
         <button className="btn primary" type="submit" disabled={saving}>
-          {saving ? "Saving…" : brewId ? "Save changes" : "Create batch"}
+          {saving ? "Guardando…" : brewId ? "Guardar cambios" : "Crear cocción"}
         </button>
       </div>
     </form>

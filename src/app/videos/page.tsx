@@ -18,10 +18,12 @@ export default function VideosPage() {
       <SiteNav active="videos" />
       <div className="page">
         <div className="section-head">
-          <h3>Brew-day videos</h3>
+          <h3>Videos del día de cocción</h3>
         </div>
         {withVideo.length === 0 ? (
-          <div className="empty-state">No videos linked yet — add a YouTube URL on a batch in the admin panel.</div>
+          <div className="empty-state">
+            Todavía no hay videos vinculados — agregá una URL de YouTube a una cocción en el panel de administración.
+          </div>
         ) : (
           <div className="batch-grid">
             {withVideo.map((brew) => {

@@ -24,11 +24,11 @@ export default function BrewsPage() {
       <SiteNav active="brews" />
       <div className="page">
         <div className="section-head">
-          <h3>{showingSample ? "Example brew (add your first batch in the admin panel)" : "Brews"}</h3>
+          <h3>{showingSample ? "Cerveza de ejemplo (agregá tu primera cocción en el panel de administración)" : "Cervezas"}</h3>
         </div>
 
         {list.length === 0 && brews !== null ? (
-          <div className="empty-state">No brews published yet.</div>
+          <div className="empty-state">Todavía no hay cervezas publicadas.</div>
         ) : (
           <div className="batch-grid">
             {list.map((brew) => (
@@ -53,7 +53,7 @@ export default function BrewsPage() {
                 </div>
                 <p className="batch-desc">{brew.summary}</p>
                 <div className="batch-footer">
-                  <span className="chip">{brew.status === "published" ? "Published" : "Draft"}</span>
+                  <span className="chip">{brew.status === "published" ? "Publicada" : "Borrador"}</span>
                 </div>
               </Link>
             ))}

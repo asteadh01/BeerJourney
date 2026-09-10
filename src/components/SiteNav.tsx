@@ -9,25 +9,25 @@ export function SiteNav({ active }: SiteNavProps) {
     <nav className="nav">
       <Link className="brand" href="/">
         <span className="mark" />
-        Batch Log
+        Bitácora Cervecera
       </Link>
       <Link className={`navlink ${active === "home" ? "active" : ""}`} href="/">
-        Home
+        Inicio
       </Link>
       <Link className={`navlink ${active === "brews" ? "active" : ""}`} href="/brews">
-        Brews
+        Cervezas
       </Link>
       <Link className={`navlink ${active === "experiments" ? "active" : ""}`} href="/experiments">
-        Experiments
+        Experimentos
       </Link>
       <Link className={`navlink ${active === "process" ? "active" : ""}`} href="/process">
-        Process
+        Proceso
       </Link>
       <Link className={`navlink ${active === "videos" ? "active" : ""}`} href="/videos">
         Videos
       </Link>
       <Link className={`navlink ${active === "about" ? "active" : ""}`} href="/about">
-        About
+        Nosotros
       </Link>
       <div className="spacer" />
     </nav>

@@ -26,7 +26,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.replace("/admin");
     } catch {
-      setError("Wrong email or password.");
+      setError("Correo o contraseña incorrectos.");
     } finally {
       setSubmitting(false);
     }
@@ -36,11 +36,11 @@ export default function LoginPage() {
     <div className="login-wrap">
       <div className="login-card">
         <div className="mark-lg" />
-        <h2>Batch Log</h2>
-        <p className="sub">Brewer sign-in — two accounts only</p>
+        <h2>Bitácora Cervecera</h2>
+        <p className="sub">Acceso de cerveceros — solo dos cuentas</p>
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Correo electrónico</label>
             <input
               id="email"
               type="email"
@@ -51,7 +51,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Contraseña</label>
             <input
               id="password"
               type="password"
@@ -62,11 +62,11 @@ export default function LoginPage() {
             />
           </div>
           <button className="btn primary" type="submit" disabled={submitting} style={{ width: "100%", justifyContent: "center", marginTop: 22 }}>
-            {submitting ? "Signing in…" : "Sign in"}
+            {submitting ? "Iniciando sesión…" : "Iniciar sesión"}
           </button>
         </form>
         {error && <p className="error-text">{error}</p>}
-        <p className="login-note">🔒 Firebase Auth · no public sign-up</p>
+        <p className="login-note">🔒 Firebase Auth · sin registro público</p>
       </div>
     </div>
   );

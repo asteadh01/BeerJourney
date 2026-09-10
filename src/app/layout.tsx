@@ -22,13 +22,13 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Batch Log",
-  description: "Our homebrew journey — recipes, process, and tasting notes.",
+  title: "Bitácora Cervecera",
+  description: "Nuestro camino como cerveceros caseros — recetas, proceso y notas de cata.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
