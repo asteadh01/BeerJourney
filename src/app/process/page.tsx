@@ -3,7 +3,7 @@ import { SiteNav } from "@/components/SiteNav";
 export default function ProcessPage() {
   return (
     <>
-      <SiteNav active="process" />
+      <SiteNav />
       <div className="page">
         <div className="section-head">
           <h3>Nuestro proceso</h3>

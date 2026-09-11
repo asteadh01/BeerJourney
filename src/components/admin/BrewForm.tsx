@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { createBrew, updateBrew } from "@/lib/brews";
-import { DatePicker } from "./DatePicker";
 import { ImageUpload } from "./ImageUpload";
 import { BEER_STYLE_GROUPS, BEER_STYLES, OTHER_STYLE } from "@/lib/beerStyles";
 import type { Brew, WeightUnit } from "@/lib/types";
@@ -109,6 +108,13 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
     e.preventDefault();
     setSaving(true);
     setError("");
+    const maltIncomplete = draft.maltBill.some((m) => String(m.amount).trim() !== "" && !m.ingredient.trim());
+    const hopIncomplete = draft.hopSchedule.some((h) => String(h.amount).trim() !== "" && !h.hop.trim());
+    if (maltIncomplete || hopIncomplete) {
+      setError("Completá el nombre de todos los ingredientes o eliminá las filas vacías.");
+      setSaving(false);
+      return;
+    }
     const cleaned: Draft = {
       ...draft,
       slug: slugify(draft.title),
@@ -224,7 +230,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
         </div>
         <div className="field">
           <label htmlFor="brewedOn">Fecha de cocción</label>
-          <DatePicker id="brewedOn" value={draft.brewedOn} onChange={(v) => set("brewedOn", v)} />
+          <input id="brewedOn" type="date" value={draft.brewedOn} onChange={(e) => set("brewedOn", e.target.value)} />
         </div>
         <div className="field">
           <label htmlFor="status">Estado</label>

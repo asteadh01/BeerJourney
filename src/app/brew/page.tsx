@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SiteNav } from "@/components/SiteNav";
+import { SiteFooter } from "@/components/SiteFooter";
 import { addComment, getBrewBySlug, watchComments } from "@/lib/brews";
 import { sampleBrews } from "@/lib/sampleBrews";
 import type { Brew, Comment } from "@/lib/types";
@@ -54,9 +55,9 @@ function BrewDetail() {
     return (
       <>
         <SiteNav />
-        <div className="page">
+        <main className="page">
           <p style={{ padding: "40px 0", color: "var(--ink-dim)" }}>Cargando…</p>
-        </div>
+        </main>
       </>
     );
   }
@@ -65,9 +66,9 @@ function BrewDetail() {
     return (
       <>
         <SiteNav />
-        <div className="page">
+        <main className="page">
           <div className="empty-state">No encontramos esa cocción.</div>
-        </div>
+        </main>
       </>
     );
   }
@@ -77,7 +78,7 @@ function BrewDetail() {
   return (
     <>
       <SiteNav />
-      <div className="page">
+      <main className="page">
         <section className="detail-hero">
           <div
             className="detail-img"
@@ -100,11 +101,11 @@ function BrewDetail() {
               </div>
               <div className="spec">
                 <div className="v">{brew.og}</div>
-                <div className="l">OG</div>
+                <div className="l"><abbr title="Original Gravity — densidad inicial del mosto">OG</abbr></div>
               </div>
               <div className="spec">
                 <div className="v">{brew.fg}</div>
-                <div className="l">FG</div>
+                <div className="l"><abbr title="Final Gravity — densidad final tras la fermentación">FG</abbr></div>
               </div>
             </div>
           </div>
@@ -130,11 +131,13 @@ function BrewDetail() {
           <div className="detail-col">
             <h3>Maltas y lúpulos</h3>
             <table className="malt-bill">
-              <tbody>
+              <thead>
                 <tr>
                   <th>Ingrediente</th>
                   <th>Cantidad</th>
                 </tr>
+              </thead>
+              <tbody>
                 {brew.maltBill.map((item, i) => (
                   <tr key={`malt-${i}`}>
                     <td>{item.ingredient}</td>
@@ -175,6 +178,7 @@ function BrewDetail() {
           ))}
           <form className="comment-form" onSubmit={handleSubmit}>
             <input
+              aria-label="Tu nombre"
               placeholder="Tu nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -183,18 +187,20 @@ function BrewDetail() {
               required
             />
             <input
+              aria-label="Nota sobre esta cocción"
               placeholder="Dejá una nota sobre esta cocción…"
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={500}
               required
             />
-            <button className="btn primary" style={{ borderRadius: 100 }} type="submit" disabled={posting}>
+            <button className="btn primary" type="submit" disabled={posting}>
               {posting ? "Publicando…" : "Publicar"}
             </button>
           </form>
         </section>
-      </div>
+      </main>
+      <SiteFooter />
     </>
   );
 }

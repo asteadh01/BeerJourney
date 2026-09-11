@@ -3,8 +3,8 @@ import { SiteNav } from "@/components/SiteNav";
 export default function ExperimentsPage() {
   return (
     <>
-      <SiteNav active="experiments" />
-      <div className="page">
+      <SiteNav />
+      <main className="page">
         <div className="section-head">
           <h3>Experimentos</h3>
         </div>
@@ -14,7 +14,7 @@ export default function ExperimentsPage() {
           principal.
         </p>
         <div className="empty-state">Todavía no hay experimentos registrados.</div>
-      </div>
+      </main>
     </>
   );
 }
