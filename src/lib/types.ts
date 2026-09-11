@@ -1,11 +1,16 @@
 export type BrewStatus = "draft" | "published";
 
+export type WeightUnit = "kg" | "g";
+
 export interface MaltBillItem {
-  ingredient: string;
   amount: string;
+  unit: WeightUnit;
+  ingredient: string;
 }
 
 export interface HopAddition {
+  amount: string;
+  unit: WeightUnit;
   hop: string;
   timing: string;
 }
@@ -29,7 +34,7 @@ export interface Brew {
   ibu: number;
   og: number;
   fg: number;
-  mashTempF?: number;
+  mashTempC?: number;
   fermentationDays?: number;
   maltBill: MaltBillItem[];
   hopSchedule: HopAddition[];
@@ -40,6 +45,22 @@ export interface Brew {
   createdBy: string;
   createdAt: number;
   updatedAt: number;
+  // Groups every batch brewed from the same recipe. Set to the first
+  // batch's own id once it's created (see createBrew in lib/brews.ts).
+  recipeGroupId: string;
+  // Id of the batch this one was created "as a new batch of", if any.
+  previousBatchId: string;
+}
+
+// One gravity measurement taken during fermentation of a batch (e.g. "day 7:
+// 1.020"). Stored as its own collection so a batch can have as many as needed.
+export interface GravityReading {
+  id: string;
+  brewId: string;
+  date: string;
+  gravity: number;
+  note?: string;
+  createdAt: number;
 }
 
 export interface Comment {

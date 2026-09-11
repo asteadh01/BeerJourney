@@ -15,6 +15,14 @@
         { "fieldPath": "brewId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "gravityReadings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "brewId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BrewForm } from "@/components/admin/BrewForm";
+import { GravityLog } from "@/components/admin/GravityLog";
 import { getBrewById } from "@/lib/brews";
 import type { Brew } from "@/lib/types";
 
@@ -25,6 +26,7 @@ function EditBrewForm() {
         <h2>Editar cocción</h2>
       </div>
       <BrewForm brewId={id} initial={brew} />
+      <GravityLog brewId={id} />
     </>
   );
 }

@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { createBrew, updateBrew } from "@/lib/brews";
-import type { Brew, HopAddition, MaltBillItem } from "@/lib/types";
+import { DatePicker } from "./DatePicker";
+import { ImageUpload } from "./ImageUpload";
+import { BEER_STYLE_GROUPS, BEER_STYLES, OTHER_STYLE } from "@/lib/beerStyles";
+import type { Brew, WeightUnit } from "@/lib/types";
 
 function slugify(title: string): string {
   return title
@@ -30,21 +33,28 @@ function emptyDraft(): Draft {
     ibu: 20,
     og: 1.05,
     fg: 1.01,
-    mashTempF: 152,
+    mashTempC: 67,
     fermentationDays: 14,
-    maltBill: [{ ingredient: "", amount: "" }],
-    hopSchedule: [{ hop: "", timing: "" }],
+    maltBill: [{ amount: "", unit: "kg", ingredient: "" }],
+    hopSchedule: [{ amount: "", unit: "g", hop: "", timing: "" }],
     processSteps: [{ order: 1, text: "" }],
     youtubeUrl: "",
     heroImageUrl: "",
     photoUrls: [],
     createdBy: "",
+    recipeGroupId: "",
+    previousBatchId: "",
   };
+}
+
+// ABV ≈ (OG − FG) × 131.25 — the standard homebrewer approximation.
+function estimateAbv(og: number, fg: number): number {
+  return Math.round((og - fg) * 131.25 * 10) / 10;
 }
 
 interface BrewFormProps {
   brewId?: string;
-  initial?: Brew;
+  initial?: Draft;
 }
 
 export function BrewForm({ brewId, initial }: BrewFormProps) {
@@ -52,22 +62,38 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
   const { user } = useAuth();
   const [draft, setDraft] = useState<Draft>(initial ?? emptyDraft());
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [useCustomStyle, setUseCustomStyle] = useState(() => Boolean(draft.style) && !BEER_STYLES.includes(draft.style));
 
   function set<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
   }
 
-  function updateMalt(i: number, field: keyof MaltBillItem, value: string) {
+  function updateMalt(i: number, field: "ingredient" | "amount", value: string) {
     setDraft((d) => ({
       ...d,
       maltBill: d.maltBill.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)),
     }));
   }
 
-  function updateHop(i: number, field: keyof HopAddition, value: string) {
+  function updateMaltUnit(i: number, unit: WeightUnit) {
+    setDraft((d) => ({
+      ...d,
+      maltBill: d.maltBill.map((item, idx) => (idx === i ? { ...item, unit } : item)),
+    }));
+  }
+
+  function updateHop(i: number, field: "hop" | "timing" | "amount", value: string) {
     setDraft((d) => ({
       ...d,
       hopSchedule: d.hopSchedule.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)),
+    }));
+  }
+
+  function updateHopUnit(i: number, unit: WeightUnit) {
+    setDraft((d) => ({
+      ...d,
+      hopSchedule: d.hopSchedule.map((item, idx) => (idx === i ? { ...item, unit } : item)),
     }));
   }
 
@@ -81,10 +107,10 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const slug = draft.slug.trim() || slugify(draft.title);
+    setError("");
     const cleaned: Draft = {
       ...draft,
-      slug,
+      slug: slugify(draft.title),
       maltBill: draft.maltBill.filter((m) => m.ingredient.trim()),
       hopSchedule: draft.hopSchedule.filter((h) => h.hop.trim()),
       processSteps: draft.processSteps
@@ -99,6 +125,8 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
         await createBrew(cleaned);
       }
       router.push("/admin/brews");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la cocción.");
     } finally {
       setSaving(false);
     }
@@ -106,6 +134,12 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
+      {draft.previousBatchId && !brewId && (
+        <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
+          Precargado desde la cocción №{String(draft.batchNumber - 1).padStart(3, "0")}. Ajustá lo que haya cambiado
+          (proporciones de ingredientes, etc.) antes de guardar.
+        </p>
+      )}
       <div className="field-row">
         <div className="field">
           <label htmlFor="title">Título</label>
@@ -113,7 +147,42 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
         </div>
         <div className="field">
           <label htmlFor="style">Estilo</label>
-          <input id="style" value={draft.style} onChange={(e) => set("style", e.target.value)} required />
+          <select
+            id="style"
+            value={useCustomStyle ? OTHER_STYLE : draft.style}
+            onChange={(e) => {
+              if (e.target.value === OTHER_STYLE) {
+                setUseCustomStyle(true);
+              } else {
+                setUseCustomStyle(false);
+                set("style", e.target.value);
+              }
+            }}
+            required
+          >
+            <option value="" disabled>
+              Elegí un estilo…
+            </option>
+            {BEER_STYLE_GROUPS.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.styles.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+            <option value={OTHER_STYLE}>{OTHER_STYLE}</option>
+          </select>
+          {useCustomStyle && (
+            <input
+              style={{ marginTop: 8 }}
+              placeholder="Nombre del estilo"
+              value={draft.style}
+              onChange={(e) => set("style", e.target.value)}
+              required
+            />
+          )}
         </div>
         <div className="field">
           <label htmlFor="batchNumber">N.º de cocción</label>
@@ -130,12 +199,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
       <div className="field-row">
         <div className="field">
           <label htmlFor="brewedOn">Fecha de cocción</label>
-          <input
-            id="brewedOn"
-            type="date"
-            value={draft.brewedOn}
-            onChange={(e) => set("brewedOn", e.target.value)}
-          />
+          <DatePicker id="brewedOn" value={draft.brewedOn} onChange={(v) => set("brewedOn", v)} />
         </div>
         <div className="field">
           <label htmlFor="status">Estado</label>
@@ -143,15 +207,6 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
             <option value="draft">Borrador</option>
             <option value="published">Publicada</option>
           </select>
-        </div>
-        <div className="field">
-          <label htmlFor="slug">Slug de URL</label>
-          <input
-            id="slug"
-            placeholder="automático a partir del título"
-            value={draft.slug}
-            onChange={(e) => set("slug", e.target.value)}
-          />
         </div>
       </div>
 
@@ -167,31 +222,44 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
 
       <div className="field-row">
         <div className="field">
-          <label htmlFor="abv">ABV %</label>
-          <input id="abv" type="number" step="0.1" value={draft.abv} onChange={(e) => set("abv", Number(e.target.value))} />
+          <label htmlFor="abv">ABV % (alcohol por volumen)</label>
+          <div className="repeat-row" style={{ gridTemplateColumns: "1fr auto" }}>
+            <input id="abv" type="number" step="0.1" value={draft.abv} onChange={(e) => set("abv", Number(e.target.value))} />
+            <button type="button" className="btn" onClick={() => set("abv", estimateAbv(draft.og, draft.fg))}>
+              Calcular
+            </button>
+          </div>
+          <p className="field-hint">ABV ≈ (Densidad inicial − Densidad final) × 131,25</p>
         </div>
         <div className="field">
-          <label htmlFor="ibu">IBU</label>
+          <label htmlFor="ibu">IBU (amargor)</label>
           <input id="ibu" type="number" value={draft.ibu} onChange={(e) => set("ibu", Number(e.target.value))} />
+          <p className="field-hint">
+            Según fórmula de Tinseth: gramos de α-ácido de cada lúpulo × % de utilización según tiempo de hervor y
+            densidad del mosto.
+          </p>
         </div>
+      </div>
+
+      <div className="field-row">
         <div className="field">
-          <label htmlFor="og">OG</label>
+          <label htmlFor="og">Densidad inicial (OG)</label>
           <input id="og" type="number" step="0.001" value={draft.og} onChange={(e) => set("og", Number(e.target.value))} />
         </div>
         <div className="field">
-          <label htmlFor="fg">FG</label>
+          <label htmlFor="fg">Densidad final (FG)</label>
           <input id="fg" type="number" step="0.001" value={draft.fg} onChange={(e) => set("fg", Number(e.target.value))} />
         </div>
       </div>
 
       <div className="field-row">
         <div className="field">
-          <label htmlFor="mashTempF">Temperatura de maceración °F</label>
+          <label htmlFor="mashTempC">Temperatura de maceración (°C)</label>
           <input
-            id="mashTempF"
+            id="mashTempC"
             type="number"
-            value={draft.mashTempF ?? ""}
-            onChange={(e) => set("mashTempF", Number(e.target.value))}
+            value={draft.mashTempC ?? ""}
+            onChange={(e) => set("mashTempC", Number(e.target.value))}
           />
         </div>
         <div className="field">
@@ -206,8 +274,8 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
       </div>
 
       <div className="field">
-        <label htmlFor="heroImageUrl">URL de imagen principal</label>
-        <input id="heroImageUrl" value={draft.heroImageUrl ?? ""} onChange={(e) => set("heroImageUrl", e.target.value)} placeholder="https://…" />
+        <label>Imagen principal</label>
+        <ImageUpload value={draft.heroImageUrl ?? ""} onChange={(url) => set("heroImageUrl", url)} />
       </div>
 
       <div className="field">
@@ -217,24 +285,52 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
 
       <div className="field">
         <label>Maltas y granos</label>
+        <p className="field-hint">Cantidad por defecto en kilogramos (kg). Cambiá la unidad a gramos (g) si hace falta.</p>
         {draft.maltBill.map((item, i) => (
-          <div className="repeat-row" key={i}>
+          <div className="repeat-row" style={{ gridTemplateColumns: "90px 70px 1fr auto" }} key={i}>
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Cantidad"
+              value={item.amount}
+              onChange={(e) => updateMalt(i, "amount", e.target.value)}
+            />
+            <select value={item.unit} onChange={(e) => updateMaltUnit(i, e.target.value as WeightUnit)}>
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+            </select>
             <input placeholder="Ingrediente" value={item.ingredient} onChange={(e) => updateMalt(i, "ingredient", e.target.value)} />
-            <input placeholder="Cantidad" value={item.amount} onChange={(e) => updateMalt(i, "amount", e.target.value)} />
             <button type="button" className="icon-btn" onClick={() => set("maltBill", draft.maltBill.filter((_, idx) => idx !== i))}>
               ×
             </button>
           </div>
         ))}
-        <button type="button" className="btn" style={{ marginTop: 8 }} onClick={() => set("maltBill", [...draft.maltBill, { ingredient: "", amount: "" }])}>
+        <button
+          type="button"
+          className="btn"
+          style={{ marginTop: 8 }}
+          onClick={() => set("maltBill", [...draft.maltBill, { amount: "", unit: "kg", ingredient: "" }])}
+        >
           + Agregar ingrediente
         </button>
       </div>
 
       <div className="field">
         <label>Lúpulos</label>
+        <p className="field-hint">Cantidad por defecto en gramos (g). Cambiá la unidad a kilogramos (kg) si hace falta.</p>
         {draft.hopSchedule.map((item, i) => (
-          <div className="repeat-row" key={i}>
+          <div className="repeat-row" style={{ gridTemplateColumns: "90px 70px 1fr 1fr auto" }} key={i}>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="Cantidad"
+              value={item.amount}
+              onChange={(e) => updateHop(i, "amount", e.target.value)}
+            />
+            <select value={item.unit} onChange={(e) => updateHopUnit(i, e.target.value as WeightUnit)}>
+              <option value="g">g</option>
+              <option value="kg">kg</option>
+            </select>
             <input placeholder="Lúpulo" value={item.hop} onChange={(e) => updateHop(i, "hop", e.target.value)} />
             <input placeholder="Momento (ej. 60 min)" value={item.timing} onChange={(e) => updateHop(i, "timing", e.target.value)} />
             <button type="button" className="icon-btn" onClick={() => set("hopSchedule", draft.hopSchedule.filter((_, idx) => idx !== i))}>
@@ -242,7 +338,12 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
             </button>
           </div>
         ))}
-        <button type="button" className="btn" style={{ marginTop: 8 }} onClick={() => set("hopSchedule", [...draft.hopSchedule, { hop: "", timing: "" }])}>
+        <button
+          type="button"
+          className="btn"
+          style={{ marginTop: 8 }}
+          onClick={() => set("hopSchedule", [...draft.hopSchedule, { amount: "", unit: "g", hop: "", timing: "" }])}
+        >
           + Agregar lúpulo
         </button>
       </div>
@@ -266,6 +367,10 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           + Agregar paso
         </button>
       </div>
+
+      {error && (
+        <p style={{ color: "var(--danger)", marginTop: 16 }}>{error}</p>
+      )}
 
       <div style={{ display: "flex", gap: 10, marginTop: 26 }}>
         <button className="btn primary" type="submit" disabled={saving}>

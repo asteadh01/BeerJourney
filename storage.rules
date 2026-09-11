@@ -5,8 +5,8 @@ service firebase.storage {
     function isAdmin() {
       return request.auth != null &&
         request.auth.token.email in [
-          'brewer-one@example.com',
-          'brewer-two@example.com'
+          'asteadh01@gmail.com',
+          'arturo.amberg@gmail.com'
         ];
     }
 

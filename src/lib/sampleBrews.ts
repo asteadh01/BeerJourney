@@ -20,17 +20,17 @@ export const sampleBrews: Brew[] = [
     ibu: 28,
     og: 1.062,
     fg: 1.014,
-    mashTempF: 152,
+    mashTempC: 67,
     fermentationDays: 12,
     maltBill: [
-      { ingredient: "Maris Otter", amount: "9 lb" },
-      { ingredient: "Malta ahumada con cerezo", amount: "1.5 lb" },
-      { ingredient: "Malta chocolate", amount: "0.75 lb" },
-      { ingredient: "Crystal 60L", amount: "0.5 lb" },
+      { amount: "4.1", unit: "kg", ingredient: "Maris Otter" },
+      { amount: "0.7", unit: "kg", ingredient: "Malta ahumada con cerezo" },
+      { amount: "0.34", unit: "kg", ingredient: "Malta chocolate" },
+      { amount: "0.23", unit: "kg", ingredient: "Crystal 60L" },
     ],
     hopSchedule: [
-      { hop: "Fuggle", timing: "60 min" },
-      { hop: "East Kent Goldings", timing: "5 min" },
+      { amount: "28", unit: "g", hop: "Fuggle", timing: "60 min" },
+      { amount: "14", unit: "g", hop: "East Kent Goldings", timing: "5 min" },
     ],
     processSteps: [
       { order: 1, text: "Maceración de la molienda a 152°F durante 60 min, infusión simple." },
@@ -43,5 +43,7 @@ export const sampleBrews: Brew[] = [
     createdBy: "sample",
     createdAt: Date.now(),
     updatedAt: Date.now(),
+    recipeGroupId: "sample-1",
+    previousBatchId: "",
   },
 ];

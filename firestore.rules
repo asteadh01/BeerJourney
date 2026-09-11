@@ -3,13 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Only the two brewer accounts may write. Add both Firebase Auth
-    // emails here once the accounts exist (see README setup steps).
+    // Only the two brewer accounts may write.
     function isAdmin() {
       return request.auth != null &&
         request.auth.token.email in [
-          'brewer-one@example.com',
-          'brewer-two@example.com'
+          'asteadh01@gmail.com',
+          'arturo.amberg@gmail.com'
         ];
     }
 
@@ -23,6 +22,12 @@ service cloud.firestore {
     match /profiles/{uid} {
       allow read: if true;
       allow write: if isAdmin() && request.auth.uid == uid;
+    }
+
+    // Fermentation gravity log: internal brewing notes, not the public
+    // tasting/comments feed, so only the brewer can read or write it.
+    match /gravityReadings/{readingId} {
+      allow read, write: if isAdmin();
     }
 
     match /comments/{commentId} {
