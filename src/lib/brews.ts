@@ -38,8 +38,12 @@ export function watchAllBrews(cb: (brews: Brew[]) => void) {
   );
 }
 
+// Public detail page only ever looks up published brews — a query without
+// this filter gets rejected outright by firestore.rules for anyone who
+// isn't admin, since rules can't verify a query's results per-document,
+// only that the query itself is constrained to what the rule allows.
 export async function getBrewBySlug(slug: string): Promise<Brew | null> {
-  const q = query(brewsCol, where("slug", "==", slug));
+  const q = query(brewsCol, where("slug", "==", slug), where("status", "==", "published"));
   const snap = await getDocs(q);
   if (snap.empty) return null;
   const d = snap.docs[0];
