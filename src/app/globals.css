@@ -1074,6 +1074,23 @@ a {
   color: var(--ink-dim);
 }
 
+.brew-group-toggle {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.brew-group-toggle:hover {
+  color: var(--copper);
+  border-color: var(--copper);
+}
+
 .brew-group-batches {
   display: flex;
   flex-direction: column;

@@ -35,10 +35,23 @@ function groupByRecipe(brews: Brew[]): BrewGroup[] {
 
 export default function AdminBrewsPage() {
   const [brews, setBrews] = useState<Brew[]>([]);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   useEffect(() => watchAllBrews(setBrews), []);
 
   const groups = useMemo(() => groupByRecipe(brews), [brews]);
+
+  function toggleCollapsed(key: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
 
   async function togglePublish(brew: Brew) {
     await updateBrew(brew.id, { status: brew.status === "published" ? "draft" : "published" });
@@ -60,47 +73,60 @@ export default function AdminBrewsPage() {
       {groups.length === 0 ? (
         <div className="empty-state">Todavía no hay cocciones. Registrá tu primera cerveza.</div>
       ) : (
-        groups.map((group) => (
-          <section className="brew-group" key={group.key}>
-            <header className="brew-group-header">
-              <span
-                className="row-thumb"
-                style={group.heroImageUrl ? { backgroundImage: `url(${group.heroImageUrl})` } : undefined}
-              />
-              <div>
-                <h3 className="brew-group-title">{group.title}</h3>
-                <span className="brew-group-meta">
-                  {group.style} · {group.batches.length} {group.batches.length === 1 ? "batch" : "batches"}
-                </span>
-              </div>
-            </header>
-            <div className="brew-group-batches">
-              {group.batches.map((brew) => (
-                <div className="brew-batch-row" key={brew.id}>
-                  <span className="brew-batch-label">Batch {brew.batchNumber}</span>
-                  <span className="brew-batch-abv">{brew.abv}% ABV</span>
-                  <span className={`status-pill ${brew.status}`}>
-                    {brew.status === "published" ? "Publicada" : "Borrador"}
+        groups.map((group) => {
+          const isCollapsed = collapsed.has(group.key);
+          return (
+            <section className="brew-group" key={group.key}>
+              <header className="brew-group-header">
+                <span
+                  className="row-thumb"
+                  style={group.heroImageUrl ? { backgroundImage: `url(${group.heroImageUrl})` } : undefined}
+                />
+                <div style={{ flex: 1 }}>
+                  <h3 className="brew-group-title">{group.title}</h3>
+                  <span className="brew-group-meta">
+                    {group.style} · {group.batches.length} {group.batches.length === 1 ? "batch" : "batches"}
                   </span>
-                  <div className="row-actions">
-                    <Link className="btn" href={`/admin/brews/edit?id=${brew.id}`}>
-                      Editar
-                    </Link>
-                    <Link className="btn" href={`/admin/brews/new?fromId=${brew.id}`}>
-                      Nuevo batch
-                    </Link>
-                    <button className="btn" onClick={() => togglePublish(brew)}>
-                      {brew.status === "published" ? "Despublicar" : "Publicar"}
-                    </button>
-                    <button className="btn danger" onClick={() => remove(brew)}>
-                      Eliminar
-                    </button>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </section>
-        ))
+                <button
+                  type="button"
+                  className="brew-group-toggle"
+                  onClick={() => toggleCollapsed(group.key)}
+                  aria-expanded={!isCollapsed}
+                >
+                  {isCollapsed ? "Mostrar batches ▾" : "Ocultar batches ▴"}
+                </button>
+              </header>
+              {!isCollapsed && (
+                <div className="brew-group-batches">
+                  {group.batches.map((brew) => (
+                    <div className="brew-batch-row" key={brew.id}>
+                      <span className="brew-batch-label">Batch {brew.batchNumber}</span>
+                      <span className="brew-batch-abv">{brew.abv}% ABV</span>
+                      <span className={`status-pill ${brew.status}`}>
+                        {brew.status === "published" ? "Publicada" : "Borrador"}
+                      </span>
+                      <div className="row-actions">
+                        <Link className="btn" href={`/admin/brews/edit?id=${brew.id}`}>
+                          Editar
+                        </Link>
+                        <Link className="btn" href={`/admin/brews/new?fromId=${brew.id}`}>
+                          Nuevo batch
+                        </Link>
+                        <button className="btn" onClick={() => togglePublish(brew)}>
+                          {brew.status === "published" ? "Despublicar" : "Publicar"}
+                        </button>
+                        <button className="btn danger" onClick={() => remove(brew)}>
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })
       )}
     </>
   );
