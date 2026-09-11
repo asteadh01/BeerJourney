@@ -11,6 +11,7 @@ import {
   serverTimestamp,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Brew, Comment, GravityReading } from "./types";
@@ -102,6 +103,27 @@ export function buildNextBatchDraft(source: Brew): NewBrewDraft {
 
 export async function updateBrew(id: string, data: Partial<Brew>) {
   return updateDoc(doc(db, "brews", id), { ...data, updatedAt: Date.now() });
+}
+
+export async function getBrewsByRecipeGroup(recipeGroupId: string): Promise<Brew[]> {
+  const q = query(brewsCol, where("recipeGroupId", "==", recipeGroupId));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew);
+}
+
+// Title/style/summary/description describe the recipe, not a single batch,
+// so editing them applies to every batch that shares this recipeGroupId.
+export async function updateRecipeFields(
+  recipeGroupId: string,
+  fields: { title: string; style: string; summary: string; description: string },
+): Promise<void> {
+  const brews = await getBrewsByRecipeGroup(recipeGroupId);
+  const batch = writeBatch(db);
+  const now = Date.now();
+  for (const brew of brews) {
+    batch.update(doc(db, "brews", brew.id), { ...fields, updatedAt: now });
+  }
+  await batch.commit();
 }
 
 export async function deleteBrew(id: string) {

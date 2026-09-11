@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { createBrew, updateBrew } from "@/lib/brews";
@@ -132,6 +133,9 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
     }
   }
 
+  const isNewRecipe = !brewId && !draft.previousBatchId;
+  const recipeGroupId = draft.recipeGroupId || draft.previousBatchId || brewId;
+
   return (
     <form onSubmit={handleSubmit}>
       {draft.previousBatchId && !brewId && (
@@ -140,50 +144,74 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           (proporciones de ingredientes, etc.) antes de guardar.
         </p>
       )}
-      <div className="field-row">
-        <div className="field">
-          <label htmlFor="title">Título</label>
-          <input id="title" value={draft.title} onChange={(e) => set("title", e.target.value)} required />
-        </div>
-        <div className="field">
-          <label htmlFor="style">Estilo</label>
-          <select
-            id="style"
-            value={useCustomStyle ? OTHER_STYLE : draft.style}
-            onChange={(e) => {
-              if (e.target.value === OTHER_STYLE) {
-                setUseCustomStyle(true);
-              } else {
-                setUseCustomStyle(false);
-                set("style", e.target.value);
-              }
-            }}
-            required
-          >
-            <option value="" disabled>
-              Elegí un estilo…
-            </option>
-            {BEER_STYLE_GROUPS.map((g) => (
-              <optgroup key={g.group} label={g.group}>
-                {g.styles.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+
+      {isNewRecipe ? (
+        <>
+          <div className="field-row">
+            <div className="field">
+              <label htmlFor="title">Título</label>
+              <input id="title" value={draft.title} onChange={(e) => set("title", e.target.value)} required />
+            </div>
+            <div className="field">
+              <label htmlFor="style">Estilo</label>
+              <select
+                id="style"
+                value={useCustomStyle ? OTHER_STYLE : draft.style}
+                onChange={(e) => {
+                  if (e.target.value === OTHER_STYLE) {
+                    setUseCustomStyle(true);
+                  } else {
+                    setUseCustomStyle(false);
+                    set("style", e.target.value);
+                  }
+                }}
+                required
+              >
+                <option value="" disabled>
+                  Elegí un estilo…
+                </option>
+                {BEER_STYLE_GROUPS.map((g) => (
+                  <optgroup key={g.group} label={g.group}>
+                    {g.styles.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
-              </optgroup>
-            ))}
-            <option value={OTHER_STYLE}>{OTHER_STYLE}</option>
-          </select>
-          {useCustomStyle && (
-            <input
-              style={{ marginTop: 8 }}
-              placeholder="Nombre del estilo"
-              value={draft.style}
-              onChange={(e) => set("style", e.target.value)}
-              required
-            />
-          )}
-        </div>
+                <option value={OTHER_STYLE}>{OTHER_STYLE}</option>
+              </select>
+              {useCustomStyle && (
+                <input
+                  style={{ marginTop: 8 }}
+                  placeholder="Nombre del estilo"
+                  value={draft.style}
+                  onChange={(e) => set("style", e.target.value)}
+                  required
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="field">
+            <label htmlFor="summary">Resumen breve (se muestra en las tarjetas)</label>
+            <input id="summary" value={draft.summary} onChange={(e) => set("summary", e.target.value)} maxLength={140} required />
+          </div>
+
+          <div className="field">
+            <label htmlFor="description">Descripción completa</label>
+            <textarea id="description" value={draft.description} onChange={(e) => set("description", e.target.value)} required />
+          </div>
+        </>
+      ) : (
+        <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
+          <strong style={{ color: "var(--ink)" }}>{draft.title}</strong> · {draft.style}. El título, estilo, resumen y
+          descripción son de la receta —{" "}
+          <Link href={`/admin/brews/recipe/edit?groupId=${recipeGroupId}`}>editalos acá</Link>.
+        </p>
+      )}
+
+      <div className="field-row">
         <div className="field">
           <label htmlFor="batchNumber">N.º de cocción</label>
           <input
@@ -194,9 +222,6 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
             required
           />
         </div>
-      </div>
-
-      <div className="field-row">
         <div className="field">
           <label htmlFor="brewedOn">Fecha de cocción</label>
           <DatePicker id="brewedOn" value={draft.brewedOn} onChange={(v) => set("brewedOn", v)} />
@@ -208,16 +233,6 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
             <option value="published">Publicada</option>
           </select>
         </div>
-      </div>
-
-      <div className="field">
-        <label htmlFor="summary">Resumen breve (se muestra en las tarjetas)</label>
-        <input id="summary" value={draft.summary} onChange={(e) => set("summary", e.target.value)} maxLength={140} required />
-      </div>
-
-      <div className="field">
-        <label htmlFor="description">Descripción completa</label>
-        <textarea id="description" value={draft.description} onChange={(e) => set("description", e.target.value)} required />
       </div>
 
       <div className="field-row">

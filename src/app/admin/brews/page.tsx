@@ -96,6 +96,9 @@ export default function AdminBrewsPage() {
                     {group.style} · {group.batches.length} {group.batches.length === 1 ? "batch" : "batches"}
                   </span>
                 </div>
+                <Link className="btn" href={`/admin/brews/recipe/edit?groupId=${group.key}`}>
+                  Editar
+                </Link>
                 <Link className="btn" href={`/admin/brews/new?fromId=${group.latestBatchId}`}>
                   + Nuevo batch
                 </Link>
