@@ -135,16 +135,20 @@ function BrewDetail() {
                   <th>Ingrediente</th>
                   <th>Cantidad</th>
                 </tr>
-                {brew.maltBill.map((item) => (
-                  <tr key={item.ingredient}>
+                {brew.maltBill.map((item, i) => (
+                  <tr key={`malt-${i}`}>
                     <td>{item.ingredient}</td>
-                    <td className="num">{item.amount}</td>
+                    <td className="num">
+                      {item.amount} {item.unit}
+                    </td>
                   </tr>
                 ))}
-                {brew.hopSchedule.map((hop) => (
-                  <tr key={hop.hop + hop.timing}>
+                {brew.hopSchedule.map((hop, i) => (
+                  <tr key={`hop-${i}`}>
                     <td>{hop.hop}</td>
-                    <td className="num">{hop.timing}</td>
+                    <td className="num">
+                      {hop.amount} {hop.unit}
+                    </td>
                   </tr>
                 ))}
               </tbody>

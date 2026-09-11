@@ -29,8 +29,8 @@ export const sampleBrews: Brew[] = [
       { amount: "0.23", unit: "kg", ingredient: "Crystal 60L" },
     ],
     hopSchedule: [
-      { amount: "28", unit: "g", hop: "Fuggle", timing: "60 min" },
-      { amount: "14", unit: "g", hop: "East Kent Goldings", timing: "5 min" },
+      { amount: "28", unit: "g", hop: "Fuggle" },
+      { amount: "14", unit: "g", hop: "East Kent Goldings" },
     ],
     processSteps: [
       { order: 1, text: "Maceración de la molienda a 152°F durante 60 min, infusión simple." },

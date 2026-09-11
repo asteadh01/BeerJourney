@@ -12,7 +12,6 @@ export interface HopAddition {
   amount: string;
   unit: WeightUnit;
   hop: string;
-  timing: string;
 }
 
 export interface ProcessStep {

@@ -36,7 +36,7 @@ function emptyDraft(): Draft {
     mashTempC: 67,
     fermentationDays: 14,
     maltBill: [{ amount: "", unit: "kg", ingredient: "" }],
-    hopSchedule: [{ amount: "", unit: "g", hop: "", timing: "" }],
+    hopSchedule: [{ amount: "", unit: "g", hop: "" }],
     processSteps: [{ order: 1, text: "" }],
     youtubeUrl: "",
     heroImageUrl: "",
@@ -83,7 +83,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
     }));
   }
 
-  function updateHop(i: number, field: "hop" | "timing" | "amount", value: string) {
+  function updateHop(i: number, field: "hop" | "amount", value: string) {
     setDraft((d) => ({
       ...d,
       hopSchedule: d.hopSchedule.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)),
@@ -319,7 +319,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
         <label>Lúpulos</label>
         <p className="field-hint">Cantidad por defecto en gramos (g). Cambiá la unidad a kilogramos (kg) si hace falta.</p>
         {draft.hopSchedule.map((item, i) => (
-          <div className="repeat-row" style={{ gridTemplateColumns: "90px 70px 1fr 1fr auto" }} key={i}>
+          <div className="repeat-row" style={{ gridTemplateColumns: "90px 70px 1fr auto" }} key={i}>
             <input
               type="number"
               step="0.1"
@@ -332,7 +332,6 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
               <option value="kg">kg</option>
             </select>
             <input placeholder="Lúpulo" value={item.hop} onChange={(e) => updateHop(i, "hop", e.target.value)} />
-            <input placeholder="Momento (ej. 60 min)" value={item.timing} onChange={(e) => updateHop(i, "timing", e.target.value)} />
             <button type="button" className="icon-btn" onClick={() => set("hopSchedule", draft.hopSchedule.filter((_, idx) => idx !== i))}>
               ×
             </button>
@@ -342,7 +341,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           type="button"
           className="btn"
           style={{ marginTop: 8 }}
-          onClick={() => set("hopSchedule", [...draft.hopSchedule, { amount: "", unit: "g", hop: "", timing: "" }])}
+          onClick={() => set("hopSchedule", [...draft.hopSchedule, { amount: "", unit: "g", hop: "" }])}
         >
           + Agregar lúpulo
         </button>
