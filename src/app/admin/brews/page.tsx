@@ -10,6 +10,7 @@ interface BrewGroup {
   title: string;
   style: string;
   heroImageUrl?: string;
+  latestBatchId: string;
   batches: Brew[];
 }
 
@@ -23,7 +24,14 @@ function groupByRecipe(brews: Brew[]): BrewGroup[] {
   const groups = Array.from(byKey.entries()).map(([key, batches]) => {
     const sorted = [...batches].sort((a, b) => a.batchNumber - b.batchNumber);
     const latest = sorted[sorted.length - 1];
-    return { key, title: latest.title, style: latest.style, heroImageUrl: latest.heroImageUrl, batches: sorted };
+    return {
+      key,
+      title: latest.title,
+      style: latest.style,
+      heroImageUrl: latest.heroImageUrl,
+      latestBatchId: latest.id,
+      batches: sorted,
+    };
   });
 
   return groups.sort((a, b) => {
@@ -88,6 +96,9 @@ export default function AdminBrewsPage() {
                     {group.style} · {group.batches.length} {group.batches.length === 1 ? "batch" : "batches"}
                   </span>
                 </div>
+                <Link className="btn" href={`/admin/brews/new?fromId=${group.latestBatchId}`}>
+                  + Nuevo batch
+                </Link>
                 <button
                   type="button"
                   className="brew-group-toggle"
@@ -109,9 +120,6 @@ export default function AdminBrewsPage() {
                       <div className="row-actions">
                         <Link className="btn" href={`/admin/brews/edit?id=${brew.id}`}>
                           Editar
-                        </Link>
-                        <Link className="btn" href={`/admin/brews/new?fromId=${brew.id}`}>
-                          Nuevo batch
                         </Link>
                         <button className="btn" onClick={() => togglePublish(brew)}>
                           {brew.status === "published" ? "Despublicar" : "Publicar"}
