@@ -45,13 +45,15 @@ export function GravityLog({ brewId }: GravityLogProps) {
         </p>
       ) : (
         <table className="admin-table" style={{ marginBottom: 14 }}>
-          <tbody>
+          <thead>
             <tr>
               <th>Fecha</th>
               <th>Densidad</th>
               <th>Nota</th>
               <th></th>
             </tr>
+          </thead>
+          <tbody>
             {readings.map((reading) => (
               <tr key={reading.id}>
                 <td>{reading.date}</td>

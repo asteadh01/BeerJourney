@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { createBrew, updateBrew } from "@/lib/brews";
-import { DatePicker } from "./DatePicker";
 import { ImageUpload } from "./ImageUpload";
+import { MultiImageUpload } from "./MultiImageUpload";
 import { BEER_STYLE_GROUPS, BEER_STYLES, OTHER_STYLE } from "@/lib/beerStyles";
 import type { Brew, WeightUnit } from "@/lib/types";
 
@@ -109,6 +109,13 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
     e.preventDefault();
     setSaving(true);
     setError("");
+    const maltIncomplete = draft.maltBill.some((m) => String(m.amount).trim() !== "" && !m.ingredient.trim());
+    const hopIncomplete = draft.hopSchedule.some((h) => String(h.amount).trim() !== "" && !h.hop.trim());
+    if (maltIncomplete || hopIncomplete) {
+      setError("Completá el nombre de todos los ingredientes o eliminá las filas vacías.");
+      setSaving(false);
+      return;
+    }
     const cleaned: Draft = {
       ...draft,
       slug: slugify(draft.title),
@@ -202,6 +209,12 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
             <label htmlFor="description">Descripción completa</label>
             <textarea id="description" value={draft.description} onChange={(e) => set("description", e.target.value)} required />
           </div>
+
+          <div className="field">
+            <label>Imagen principal</label>
+            <p className="field-hint">Se muestra en todas las páginas de esta receta (listado, tarjetas y detalle).</p>
+            <ImageUpload value={draft.heroImageUrl ?? ""} onChange={(url) => set("heroImageUrl", url)} />
+          </div>
         </>
       ) : (
         <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
@@ -224,7 +237,7 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
         </div>
         <div className="field">
           <label htmlFor="brewedOn">Fecha de cocción</label>
-          <DatePicker id="brewedOn" value={draft.brewedOn} onChange={(v) => set("brewedOn", v)} />
+          <input id="brewedOn" type="date" value={draft.brewedOn} onChange={(e) => set("brewedOn", e.target.value)} />
         </div>
         <div className="field">
           <label htmlFor="status">Estado</label>
@@ -289,8 +302,9 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
       </div>
 
       <div className="field">
-        <label>Imagen principal</label>
-        <ImageUpload value={draft.heroImageUrl ?? ""} onChange={(url) => set("heroImageUrl", url)} />
+        <label>Fotos de este batch</label>
+        <p className="field-hint">Imágenes propias de esta cocción (además de la imagen principal de la receta).</p>
+        <MultiImageUpload value={draft.photoUrls} onChange={(urls) => set("photoUrls", urls)} />
       </div>
 
       <div className="field">

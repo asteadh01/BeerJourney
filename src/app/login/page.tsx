@@ -33,7 +33,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-wrap">
+    <main className="login-wrap">
       <div className="login-card">
         <div className="mark-lg" />
         <h2>Bitácora Cervecera</h2>
@@ -66,8 +66,8 @@ export default function LoginPage() {
           </button>
         </form>
         {error && <p className="error-text">{error}</p>}
-        <p className="login-note">🔒 Firebase Auth · sin registro público</p>
+        <p className="login-note">Acceso privado — solo para los cerveceros del proyecto.</p>
       </div>
-    </div>
+    </main>
   );
 }

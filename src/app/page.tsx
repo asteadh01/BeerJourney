@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export default function HomePage() {
   return (
     <>
       <SiteNav active="home" />
-      <div className="page">
+      <main className="page">
         <section className="hero">
           <div>
             <span className="eyebrow">Nuestra historia</span>
@@ -20,24 +21,20 @@ export default function HomePage() {
               <Link className="btn primary" href="/brews">
                 Ver las cervezas
               </Link>
-              <Link className="btn" href="/experiments">
-                Ver los experimentos
-              </Link>
             </div>
           </div>
-          <div className="hero-visual" />
+          <div className="hero-visual" aria-hidden="true" />
         </section>
 
         <div className="section-head">
           <h3>De qué se trata esto</h3>
         </div>
         <p style={{ color: "var(--ink-dim)", maxWidth: "60ch", lineHeight: 1.7, marginTop: 8 }}>
-          Este es texto de relleno por ahora — la historia real va a ir acá una vez que la escribamos. La versión
-          corta: dos cerveceros caseros, registrando cada cocción, cada receta y cada idea rara que valga la pena
-          probar en el camino. Pasá por <Link href="/brews">Cervezas</Link> para ver el registro completo, o por{" "}
-          <Link href="/experiments">Experimentos</Link> para lo que no entra en ningún otro lado.
+          Dos cerveceros caseros, registrando cada cocción, cada receta y cada idea rara que valga la pena
+          probar en el camino. Pasá por <Link href="/brews">Cervezas</Link> para ver el registro completo.
         </p>
-      </div>
+      </main>
+      <SiteFooter />
     </>
   );
 }
