@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { deleteBrew, updateBrew, watchAllBrews } from "@/lib/brews";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "@/lib/firebase";
+import { deleteBrew, updateBrew, updateRecipeHeroImage, watchAllBrews } from "@/lib/brews";
 import type { Brew } from "@/lib/types";
 
 interface BrewGroup {
@@ -44,6 +46,9 @@ function groupByRecipe(brews: Brew[]): BrewGroup[] {
 export default function AdminBrewsPage() {
   const [brews, setBrews] = useState<Brew[]>([]);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
+  const pendingGroupKey = useRef<string | null>(null);
 
   useEffect(() => watchAllBrews(setBrews), []);
 
@@ -59,6 +64,28 @@ export default function AdminBrewsPage() {
       }
       return next;
     });
+  }
+
+  function openThumbUpload(groupKey: string) {
+    pendingGroupKey.current = groupKey;
+    thumbInputRef.current?.click();
+  }
+
+  async function handleThumbFile(file: File) {
+    const groupKey = pendingGroupKey.current;
+    if (!groupKey) return;
+    setUploadingKey(groupKey);
+    try {
+      const path = `brews/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+      const fileRef = ref(storage, path);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      await updateRecipeHeroImage(groupKey, url);
+    } catch {
+      alert("No se pudo subir la imagen. Probá de nuevo.");
+    } finally {
+      setUploadingKey(null);
+    }
   }
 
   async function togglePublish(brew: Brew) {
@@ -78,6 +105,17 @@ export default function AdminBrewsPage() {
           + Nueva cocción
         </Link>
       </div>
+      <input
+        ref={thumbInputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleThumbFile(file);
+          e.target.value = "";
+        }}
+      />
       {groups.length === 0 ? (
         <div className="empty-state">Todavía no hay cocciones. Registrá tu primera cerveza.</div>
       ) : (
@@ -86,10 +124,17 @@ export default function AdminBrewsPage() {
           return (
             <section className="brew-group" key={group.key}>
               <header className="brew-group-header">
-                <span
-                  className="row-thumb"
+                <button
+                  type="button"
+                  className="row-thumb row-thumb-upload"
                   style={group.heroImageUrl ? { backgroundImage: `url(${group.heroImageUrl})` } : undefined}
-                />
+                  onClick={() => openThumbUpload(group.key)}
+                  disabled={uploadingKey === group.key}
+                  title="Cambiar imagen principal"
+                  aria-label="Cambiar imagen principal"
+                >
+                  {uploadingKey === group.key ? "…" : !group.heroImageUrl && "+"}
+                </button>
                 <div style={{ flex: 1 }}>
                   <h3 className="brew-group-title">{group.title}</h3>
                   <span className="brew-group-meta">

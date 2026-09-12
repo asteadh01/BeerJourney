@@ -159,6 +159,17 @@ function BrewDetail() {
           </div>
         </section>
 
+        {brew.photoUrls.length > 0 && (
+          <section className="detail-body" style={{ display: "block" }}>
+            <h3>Fotos de esta cocción</h3>
+            <div className="photo-gallery">
+              {brew.photoUrls.map((url) => (
+                <div className="photo-gallery-item" style={{ backgroundImage: `url(${url})` }} key={url} />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="comments-block">
           <h3 style={{ fontSize: "1rem", marginBottom: 6 }}>Notas de cata</h3>
           {comments.length === 0 && (

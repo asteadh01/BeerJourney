@@ -93,7 +93,7 @@ export function buildNextBatchDraft(source: Brew): NewBrewDraft {
     hopSchedule: source.hopSchedule.map((item) => ({ ...item })),
     processSteps: source.processSteps.map((step) => ({ ...step })),
     youtubeUrl: "",
-    heroImageUrl: "",
+    heroImageUrl: source.heroImageUrl ?? "",
     photoUrls: [],
     createdBy: source.createdBy,
     recipeGroupId: source.recipeGroupId || source.id,
@@ -111,17 +111,31 @@ export async function getBrewsByRecipeGroup(recipeGroupId: string): Promise<Brew
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew);
 }
 
-// Title/style/summary/description describe the recipe, not a single batch,
-// so editing them applies to every batch that shares this recipeGroupId.
+// Title/style/summary/description/heroImageUrl describe the recipe, not a
+// single batch, so editing them applies to every batch that shares this
+// recipeGroupId.
 export async function updateRecipeFields(
   recipeGroupId: string,
-  fields: { title: string; style: string; summary: string; description: string },
+  fields: { title: string; style: string; summary: string; description: string; heroImageUrl: string },
 ): Promise<void> {
   const brews = await getBrewsByRecipeGroup(recipeGroupId);
   const batch = writeBatch(db);
   const now = Date.now();
   for (const brew of brews) {
     batch.update(doc(db, "brews", brew.id), { ...fields, updatedAt: now });
+  }
+  await batch.commit();
+}
+
+// Lets the admin list set the recipe's main image directly (without opening
+// the full recipe editor) — applies to every batch in the group, same as
+// updateRecipeFields.
+export async function updateRecipeHeroImage(recipeGroupId: string, heroImageUrl: string): Promise<void> {
+  const brews = await getBrewsByRecipeGroup(recipeGroupId);
+  const batch = writeBatch(db);
+  const now = Date.now();
+  for (const brew of brews) {
+    batch.update(doc(db, "brews", brew.id), { heroImageUrl, updatedAt: now });
   }
   await batch.commit();
 }

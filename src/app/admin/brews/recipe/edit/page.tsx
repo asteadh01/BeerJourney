@@ -12,6 +12,7 @@ interface RecipeFields {
   style: string;
   summary: string;
   description: string;
+  heroImageUrl: string;
 }
 
 function RecipeEditForm() {
@@ -31,7 +32,13 @@ function RecipeEditForm() {
       setBatches(brews);
       const latest = [...brews].sort((a, b) => b.batchNumber - a.batchNumber)[0];
       if (latest) {
-        setFields({ title: latest.title, style: latest.style, summary: latest.summary, description: latest.description });
+        setFields({
+          title: latest.title,
+          style: latest.style,
+          summary: latest.summary,
+          description: latest.description,
+          heroImageUrl: latest.heroImageUrl ?? "",
+        });
         setUseCustomStyle(!BEER_STYLES.includes(latest.style));
       }
     });
@@ -66,8 +73,9 @@ function RecipeEditForm() {
         <h2>Editar receta</h2>
       </div>
       <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
-        Estos cambios se aplican a los {batches.length} batch{batches.length === 1 ? "" : "es"} de esta receta. El resto de
-        los datos (densidades, ingredientes, proceso, imagen, etc.) se edita por batch desde el listado.
+        Estos cambios se aplican a los {batches.length} batch{batches.length === 1 ? "" : "es"} de esta receta. La imagen
+        principal se cambia tocando la miniatura en el listado. El resto de los datos (densidades, ingredientes, proceso,
+        fotos del batch, etc.) se edita por batch desde el listado.
       </p>
       <form onSubmit={handleSubmit}>
         <div className="field">

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { createBrew, updateBrew } from "@/lib/brews";
 import { ImageUpload } from "./ImageUpload";
+import { MultiImageUpload } from "./MultiImageUpload";
 import { BEER_STYLE_GROUPS, BEER_STYLES, OTHER_STYLE } from "@/lib/beerStyles";
 import type { Brew, WeightUnit } from "@/lib/types";
 
@@ -208,6 +209,12 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
             <label htmlFor="description">Descripción completa</label>
             <textarea id="description" value={draft.description} onChange={(e) => set("description", e.target.value)} required />
           </div>
+
+          <div className="field">
+            <label>Imagen principal</label>
+            <p className="field-hint">Se muestra en todas las páginas de esta receta (listado, tarjetas y detalle).</p>
+            <ImageUpload value={draft.heroImageUrl ?? ""} onChange={(url) => set("heroImageUrl", url)} />
+          </div>
         </>
       ) : (
         <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
@@ -295,8 +302,9 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
       </div>
 
       <div className="field">
-        <label>Imagen principal</label>
-        <ImageUpload value={draft.heroImageUrl ?? ""} onChange={(url) => set("heroImageUrl", url)} />
+        <label>Fotos de este batch</label>
+        <p className="field-hint">Imágenes propias de esta cocción (además de la imagen principal de la receta).</p>
+        <MultiImageUpload value={draft.photoUrls} onChange={(urls) => set("photoUrls", urls)} />
       </div>
 
       <div className="field">
