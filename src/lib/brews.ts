@@ -98,6 +98,8 @@ export function buildNextBatchDraft(source: Brew): NewBrewDraft {
     createdBy: source.createdBy,
     recipeGroupId: source.recipeGroupId || source.id,
     previousBatchId: source.id,
+    ideaId: source.ideaId,
+    changeNote: "",
   };
 }
 

@@ -45,6 +45,8 @@ function emptyDraft(): Draft {
     createdBy: "",
     recipeGroupId: "",
     previousBatchId: "",
+    ideaId: "",
+    changeNote: "",
   };
 }
 
@@ -217,11 +219,23 @@ export function BrewForm({ brewId, initial }: BrewFormProps) {
           </div>
         </>
       ) : (
-        <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
-          <strong style={{ color: "var(--ink)" }}>{draft.title}</strong> · {draft.style}. El título, estilo, resumen y
-          descripción son de la receta —{" "}
-          <Link href={`/admin/brews/recipe/edit?groupId=${recipeGroupId}`}>editalos acá</Link>.
-        </p>
+        <>
+          <p style={{ color: "var(--ink-dim)", marginTop: 0 }}>
+            <strong style={{ color: "var(--ink)" }}>{draft.title}</strong> · {draft.style}. El título, estilo, resumen y
+            descripción son de la receta —{" "}
+            <Link href={`/admin/brews/recipe/edit?groupId=${recipeGroupId}`}>editalos acá</Link>.
+          </p>
+          <div className="field">
+            <label htmlFor="changeNote">¿Qué cambié esta vez?</label>
+            <textarea
+              id="changeNote"
+              value={draft.changeNote ?? ""}
+              onChange={(e) => set("changeNote", e.target.value)}
+              placeholder="Ej: bajé la avena a la mitad para reducir la turbidez…"
+            />
+            <p className="field-hint">Lo que ajustaste respecto del batch anterior — queda en el historial de esta receta.</p>
+          </div>
+        </>
       )}
 
       <div className="field-row">

@@ -17,6 +17,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Ideas are pure R&D notes — never shown outside the admin panel.
+    match /ideas/{ideaId} {
+      allow read, write: if isAdmin();
+    }
+
     // Brewer profile (display name, bio, avatar): public read for the About
     // page, but each brewer can only write their own document.
     match /profiles/{uid} {
