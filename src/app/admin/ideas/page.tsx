@@ -27,6 +27,7 @@ export default function AdminIdeasPage() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [authors, setAuthors] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<"todas" | IdeaStatus>("todas");
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   useEffect(() => watchIdeas(setIdeas), []);
 
@@ -47,9 +48,12 @@ export default function AdminIdeasPage() {
     [ideas, filter],
   );
 
+  const preview = ideas.find((i) => i.id === previewId) ?? null;
+
   async function remove(idea: Idea) {
     if (!confirm(`¿Eliminar la idea "${idea.title}"? Esta acción no se puede deshacer.`)) return;
     await deleteIdea(idea.id);
+    if (previewId === idea.id) setPreviewId(null);
   }
 
   return (
@@ -81,7 +85,19 @@ export default function AdminIdeasPage() {
       ) : (
         <div className="idea-board">
           {filtered.map((idea) => (
-            <div className="idea-card" key={idea.id}>
+            <div
+              className="idea-card"
+              key={idea.id}
+              onClick={() => setPreviewId(idea.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setPreviewId(idea.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
               <div className="idea-card-head">
                 <div className="idea-card-title">
                   <span className="avatar-chip" title={authors[idea.createdBy]}>
@@ -109,7 +125,7 @@ export default function AdminIdeasPage() {
                   ))}
                 </div>
               )}
-              <div className="idea-card-actions">
+              <div className="idea-card-actions" onClick={(e) => e.stopPropagation()}>
                 {idea.status === "convertida" && idea.experimentGroupId ? (
                   <Link className="btn" style={{ flex: 1, justifyContent: "center" }} href={`/admin/brews/edit?id=${idea.experimentGroupId}`}>
                     Ver experimento →
@@ -129,6 +145,107 @@ export default function AdminIdeasPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {preview && (
+        <div className="modal-overlay" onClick={() => setPreviewId(null)}>
+          <div className="modal-panel wide" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+              <div>
+                <h3 style={{ marginBottom: 4 }}>{preview.title}</h3>
+                <span className={`status-pill ${preview.status}`}>{STATUS_LABEL[preview.status]}</span>
+              </div>
+              <button className="modal-close" onClick={() => setPreviewId(null)} aria-label="Cerrar">
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="modal-label" style={{ marginTop: 16 }}>
+                Estilo
+              </p>
+              <p>
+                {preview.style || "Sin definir"}
+                {preview.targetAbv ? ` · ABV objetivo ~${preview.targetAbv}% (sin confirmar)` : ""}
+              </p>
+
+              {preview.why && (
+                <>
+                  <p className="modal-label">¿Por qué probarla?</p>
+                  <p>{preview.why}</p>
+                </>
+              )}
+
+              {preview.maltBill.length > 0 && (
+                <>
+                  <p className="modal-label">Maltas</p>
+                  <div className="idea-tags">
+                    {preview.maltBill.map((m, i) => (
+                      <span key={i}>
+                        {m.ingredient} — {m.amount} {m.unit}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {preview.hopSchedule.length > 0 && (
+                <>
+                  <p className="modal-label">Lúpulos</p>
+                  <div className="idea-tags">
+                    {preview.hopSchedule.map((h, i) => (
+                      <span key={i}>
+                        {h.hop} — {h.amount} {h.unit}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {preview.otherIngredients.length > 0 && (
+                <>
+                  <p className="modal-label">Otros ingredientes</p>
+                  <div className="idea-tags">
+                    {preview.otherIngredients.map((o, i) => (
+                      <span key={i}>{o}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {preview.notes && (
+                <>
+                  <p className="modal-label">Notas sueltas</p>
+                  <p>{preview.notes}</p>
+                </>
+              )}
+
+              <p className="modal-label">Anotada por</p>
+              <p>
+                {authors[preview.createdBy] ?? "…"} ·{" "}
+                {new Date(preview.createdAt).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+              </p>
+            </div>
+
+            <div className="modal-actions">
+              {preview.status === "convertida" && preview.experimentGroupId ? (
+                <Link className="btn primary" href={`/admin/brews/edit?id=${preview.experimentGroupId}`}>
+                  Ver experimento →
+                </Link>
+              ) : (
+                <Link className="btn primary" href={`/admin/ideas/edit?id=${preview.id}`}>
+                  Editar
+                </Link>
+              )}
+              <button className="btn danger" onClick={() => remove(preview)}>
+                Eliminar
+              </button>
+              <button className="btn" onClick={() => setPreviewId(null)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

@@ -1089,6 +1089,39 @@ button.image-upload-preview:hover {
   flex-wrap: wrap;
 }
 
+.modal-panel.wide { max-width: 620px; }
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--ink-dim);
+  padding: 2px 6px;
+}
+
+.modal-close:hover { color: var(--ink); }
+
+.modal-label {
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-dim);
+  font-weight: 700;
+  margin: 18px 0 6px;
+}
+
+.modal-label:first-of-type { margin-top: 0; }
+
+.modal-body p {
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 0;
+}
+
 .crop-frame {
   position: relative;
   margin-top: 14px;
@@ -1652,6 +1685,13 @@ button.image-upload-preview:hover {
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
   padding: 16px 18px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.idea-card:hover {
+  box-shadow: var(--shadow);
+  transform: translate(-1px, -1px);
 }
 
 .idea-card-head {
