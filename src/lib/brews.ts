@@ -39,10 +39,9 @@ export function watchAllBrews(cb: (brews: Brew[]) => void) {
   );
 }
 
-// Public detail page only ever looks up published brews — a query without
-// this filter gets rejected outright by firestore.rules for anyone who
-// isn't admin, since rules can't verify a query's results per-document,
-// only that the query itself is constrained to what the rule allows.
+// The public "Cervezas" detail page for a recipe: only ever the batch
+// that's actually been marked published (the official one), even though
+// brews are readable regardless of status.
 export async function getBrewBySlug(slug: string): Promise<Brew | null> {
   const q = query(brewsCol, where("slug", "==", slug), where("status", "==", "published"));
   const snap = await getDocs(q);
@@ -111,6 +110,27 @@ export async function getBrewsByRecipeGroup(recipeGroupId: string): Promise<Brew
   const q = query(brewsCol, where("recipeGroupId", "==", recipeGroupId));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Brew);
+}
+
+export interface RecipeGroup {
+  key: string;
+  // Ascending by batch number — the last entry is the most recent attempt.
+  batches: Brew[];
+}
+
+// Groups a list of brews by recipeGroupId, batches sorted oldest to newest.
+// Used both by the admin brews list (every batch) and the public Cervezas
+// and Experimentos pages (published-only / all, respectively).
+export function groupBrewsByRecipe(brews: Brew[]): RecipeGroup[] {
+  const byKey = new Map<string, Brew[]>();
+  for (const brew of brews) {
+    const key = brew.recipeGroupId || brew.id;
+    byKey.set(key, [...(byKey.get(key) ?? []), brew]);
+  }
+  return Array.from(byKey.entries()).map(([key, batches]) => ({
+    key,
+    batches: [...batches].sort((a, b) => a.batchNumber - b.batchNumber),
+  }));
 }
 
 // Title/style/summary/description/heroImageUrl describe the recipe, not a

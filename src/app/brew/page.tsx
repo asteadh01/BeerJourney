@@ -1,10 +1,11 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { addComment, getBrewBySlug, watchComments } from "@/lib/brews";
+import { addComment, getBrewBySlug, getBrewsByRecipeGroup, watchComments } from "@/lib/brews";
 import { sampleBrews } from "@/lib/sampleBrews";
 import type { Brew, Comment } from "@/lib/types";
 import { youtubeEmbedUrl } from "@/lib/youtube";
@@ -16,6 +17,7 @@ function BrewDetail() {
   const sample = useMemo(() => sampleBrews.find((b) => b.slug === slug), [slug]);
   const [fetchResult, setFetchResult] = useState<{ slug: string; brew: Brew | null } | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [tryCount, setTryCount] = useState(0);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [posting, setPosting] = useState(false);
@@ -37,6 +39,11 @@ function BrewDetail() {
   useEffect(() => {
     if (!brew || brew.id.startsWith("sample-")) return;
     return watchComments(brew.id, setComments);
+  }, [brew]);
+
+  useEffect(() => {
+    if (!brew || brew.id.startsWith("sample-")) return;
+    getBrewsByRecipeGroup(brew.recipeGroupId).then((batches) => setTryCount(batches.length));
   }, [brew]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -108,6 +115,11 @@ function BrewDetail() {
                 <div className="l"><abbr title="Final Gravity — densidad final tras la fermentación">FG</abbr></div>
               </div>
             </div>
+            {tryCount > 1 && (
+              <Link className="experiment-link" href={`/experimento?group=${brew.recipeGroupId}`}>
+                🧪 Ver el proceso de experimentación ({tryCount} intentos) →
+              </Link>
+            )}
           </div>
         </section>
 
@@ -129,7 +141,7 @@ function BrewDetail() {
             )}
           </div>
           <div className="detail-col">
-            <h3>Maltas y lúpulos</h3>
+            <h3>Maltas</h3>
             <table className="malt-bill">
               <thead>
                 <tr>
@@ -146,6 +158,18 @@ function BrewDetail() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+
+            <h3>Lúpulos</h3>
+            <table className="malt-bill">
+              <thead>
+                <tr>
+                  <th>Ingrediente</th>
+                  <th>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
                 {brew.hopSchedule.map((hop, i) => (
                   <tr key={`hop-${i}`}>
                     <td>{hop.hop}</td>

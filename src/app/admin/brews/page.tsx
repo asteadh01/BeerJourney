@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "@/lib/firebase";
-import { deleteBrew, updateBrew, updateRecipeHeroImage, watchAllBrews } from "@/lib/brews";
+import { deleteBrew, groupBrewsByRecipe, updateBrew, updateRecipeHeroImage, watchAllBrews } from "@/lib/brews";
 import type { Brew } from "@/lib/types";
 
 interface BrewGroup {
@@ -17,22 +17,15 @@ interface BrewGroup {
 }
 
 function groupByRecipe(brews: Brew[]): BrewGroup[] {
-  const byKey = new Map<string, Brew[]>();
-  for (const brew of brews) {
-    const key = brew.recipeGroupId || brew.id;
-    byKey.set(key, [...(byKey.get(key) ?? []), brew]);
-  }
-
-  const groups = Array.from(byKey.entries()).map(([key, batches]) => {
-    const sorted = [...batches].sort((a, b) => a.batchNumber - b.batchNumber);
-    const latest = sorted[sorted.length - 1];
+  const groups = groupBrewsByRecipe(brews).map(({ key, batches }) => {
+    const latest = batches[batches.length - 1];
     return {
       key,
       title: latest.title,
       style: latest.style,
       heroImageUrl: latest.heroImageUrl,
       latestBatchId: latest.id,
-      batches: sorted,
+      batches,
     };
   });
 

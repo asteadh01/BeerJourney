@@ -4,9 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { watchPublishedBrews } from "@/lib/brews";
+import { groupBrewsByRecipe, watchPublishedBrews } from "@/lib/brews";
 import { sampleBrews } from "@/lib/sampleBrews";
 import type { Brew } from "@/lib/types";
+
+// Cervezas shows one card per recipe — whichever batch is currently
+// published, not every published batch in its history.
+function officialBrews(brews: Brew[]): Brew[] {
+  return groupBrewsByRecipe(brews).map(({ batches }) => batches[batches.length - 1]);
+}
 
 export default function BrewsPage() {
   const [brews, setBrews] = useState<Brew[] | null>(null);
@@ -36,7 +42,7 @@ export default function BrewsPage() {
   }
 
   const showingSample = brews.length === 0;
-  const list = showingSample ? sampleBrews : brews;
+  const list = showingSample ? sampleBrews : officialBrews(brews);
 
   return (
     <>

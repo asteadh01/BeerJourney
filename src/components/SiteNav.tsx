@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 interface SiteNavProps {
-  active?: "home" | "brews" | "videos" | "about";
+  active?: "home" | "brews" | "experimentos" | "videos" | "about";
 }
 
 export function SiteNav({ active }: SiteNavProps) {
@@ -17,6 +17,9 @@ export function SiteNav({ active }: SiteNavProps) {
         </Link>
         <Link className={`navlink ${active === "brews" ? "active" : ""}`} href="/brews">
           Cervezas
+        </Link>
+        <Link className={`navlink ${active === "experimentos" ? "active" : ""}`} href="/experimentos">
+          Experimentos
         </Link>
         <Link className={`navlink ${active === "videos" ? "active" : ""}`} href="/videos">
           Videos
