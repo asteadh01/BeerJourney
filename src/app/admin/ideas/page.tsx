@@ -173,7 +173,7 @@ export default function AdminIdeasPage() {
               {preview.why && (
                 <>
                   <p className="modal-label">¿Por qué probarla?</p>
-                  <p>{preview.why}</p>
+                  <p className="multiline">{preview.why}</p>
                 </>
               )}
 
@@ -217,7 +217,7 @@ export default function AdminIdeasPage() {
               {preview.notes && (
                 <>
                   <p className="modal-label">Notas sueltas</p>
-                  <p>{preview.notes}</p>
+                  <p className="multiline">{preview.notes}</p>
                 </>
               )}
 
