@@ -1091,6 +1091,7 @@ button.image-upload-preview:hover {
 }
 
 .modal-panel.wide { max-width: 620px; }
+.modal-panel.xwide { max-width: 760px; }
 
 .modal-close {
   background: none;
@@ -1434,6 +1435,13 @@ button.image-upload-preview:hover {
   background: var(--surface);
   box-shadow: var(--shadow);
   overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.brew-group:hover {
+  box-shadow: 8px 8px 0 var(--gold-shadow);
+  transform: translate(-1px, -1px);
 }
 
 .brew-group-header {
