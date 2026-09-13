@@ -9,55 +9,33 @@ import type { Brew } from "@/lib/types";
 
 interface BrewGroup {
   key: string;
-  title: string;
-  style: string;
-  heroImageUrl?: string;
-  latestBatchId: string;
-  batches: Brew[];
+  official: Brew;
+  tryCount: number;
 }
 
-function groupByRecipe(brews: Brew[]): BrewGroup[] {
-  const groups = groupBrewsByRecipe(brews).map(({ key, batches }) => {
-    const latest = batches[batches.length - 1];
-    return {
-      key,
-      title: latest.title,
-      style: latest.style,
-      heroImageUrl: latest.heroImageUrl,
-      latestBatchId: latest.id,
-      batches,
-    };
-  });
+// Cervezas shows one card per recipe — whichever batch is currently
+// published, not every batch in the recipe's history (that's Experimentos).
+function officialGroups(brews: Brew[]): BrewGroup[] {
+  const groups = groupBrewsByRecipe(brews)
+    .map(({ key, batches }) => {
+      const published = batches.filter((b) => b.status === "published");
+      const official = published[published.length - 1];
+      return official ? { key, official, tryCount: batches.length } : null;
+    })
+    .filter((g): g is BrewGroup => g !== null);
 
-  return groups.sort((a, b) => {
-    const aLatest = a.batches[a.batches.length - 1];
-    const bLatest = b.batches[b.batches.length - 1];
-    return bLatest.batchNumber - aLatest.batchNumber;
-  });
+  return groups.sort((a, b) => b.official.batchNumber - a.official.batchNumber);
 }
 
 export default function AdminBrewsPage() {
   const [brews, setBrews] = useState<Brew[]>([]);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const thumbInputRef = useRef<HTMLInputElement>(null);
   const pendingGroupKey = useRef<string | null>(null);
 
   useEffect(() => watchAllBrews(setBrews), []);
 
-  const groups = useMemo(() => groupByRecipe(brews), [brews]);
-
-  function toggleCollapsed(key: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }
+  const groups = useMemo(() => officialGroups(brews), [brews]);
 
   function openThumbUpload(groupKey: string) {
     pendingGroupKey.current = groupKey;
@@ -81,8 +59,8 @@ export default function AdminBrewsPage() {
     }
   }
 
-  async function togglePublish(brew: Brew) {
-    await updateBrew(brew.id, { status: brew.status === "published" ? "draft" : "published" });
+  async function unpublish(brew: Brew) {
+    await updateBrew(brew.id, { status: "draft" });
   }
 
   async function remove(brew: Brew) {
@@ -94,10 +72,11 @@ export default function AdminBrewsPage() {
     <>
       <div className="admin-head">
         <h2>Cervezas</h2>
-        <Link className="btn primary" href="/admin/brews/new">
-          + Nueva cocción
-        </Link>
       </div>
+      <p style={{ color: "var(--ink-dim)", fontSize: "0.85rem", marginTop: -8, marginBottom: 20 }}>
+        Una tarjeta por receta — la que está marcada como oficial. Las cocciones nuevas y los demás intentos se
+        arrancan y se manejan desde <Link href="/admin/experiments">Experimentos</Link>.
+      </p>
       <input
         ref={thumbInputRef}
         type="file"
@@ -110,72 +89,50 @@ export default function AdminBrewsPage() {
         }}
       />
       {groups.length === 0 ? (
-        <div className="empty-state">Todavía no hay cocciones. Registrá tu primera cerveza.</div>
+        <div className="empty-state">
+          Todavía no hay cervezas oficiales — marcá un intento como oficial desde{" "}
+          <Link href="/admin/experiments">Experimentos</Link>.
+        </div>
       ) : (
-        groups.map((group) => {
-          const isCollapsed = collapsed.has(group.key);
-          return (
-            <section className="brew-group" key={group.key}>
-              <header className="brew-group-header">
-                <button
-                  type="button"
-                  className="row-thumb row-thumb-upload"
-                  style={group.heroImageUrl ? { backgroundImage: `url(${group.heroImageUrl})` } : undefined}
-                  onClick={() => openThumbUpload(group.key)}
-                  disabled={uploadingKey === group.key}
-                  title="Cambiar imagen principal"
-                  aria-label="Cambiar imagen principal"
-                >
-                  {uploadingKey === group.key ? "…" : !group.heroImageUrl && "+"}
-                </button>
-                <div style={{ flex: 1 }}>
-                  <h3 className="brew-group-title">{group.title}</h3>
-                  <span className="brew-group-meta">
-                    {group.style} · {group.batches.length} {group.batches.length === 1 ? "batch" : "batches"}
-                  </span>
-                </div>
-                <Link className="btn" href={`/admin/brews/recipe/edit?groupId=${group.key}`}>
-                  Editar
-                </Link>
-                <Link className="btn" href={`/admin/brews/new?fromId=${group.latestBatchId}`}>
-                  + Nuevo batch
-                </Link>
-                <button
-                  type="button"
-                  className="brew-group-toggle"
-                  onClick={() => toggleCollapsed(group.key)}
-                  aria-expanded={!isCollapsed}
-                >
-                  {isCollapsed ? "Mostrar batches ▾" : "Ocultar batches ▴"}
-                </button>
-              </header>
-              {!isCollapsed && (
-                <div className="brew-group-batches">
-                  {group.batches.map((brew) => (
-                    <div className="brew-batch-row" key={brew.id}>
-                      <span className="brew-batch-label">Batch {brew.batchNumber}</span>
-                      <span className="brew-batch-abv">{brew.abv}% ABV</span>
-                      <span className={`status-pill ${brew.status}`}>
-                        {brew.status === "published" ? "Publicada" : "Borrador"}
-                      </span>
-                      <div className="row-actions">
-                        <Link className="btn" href={`/admin/brews/edit?id=${brew.id}`}>
-                          Editar
-                        </Link>
-                        <button className="btn" onClick={() => togglePublish(brew)}>
-                          {brew.status === "published" ? "Despublicar" : "Publicar"}
-                        </button>
-                        <button className="btn danger" onClick={() => remove(brew)}>
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          );
-        })
+        groups.map((group) => (
+          <section className="brew-group" key={group.key}>
+            <header className="brew-group-header">
+              <button
+                type="button"
+                className="row-thumb row-thumb-upload"
+                style={group.official.heroImageUrl ? { backgroundImage: `url(${group.official.heroImageUrl})` } : undefined}
+                onClick={() => openThumbUpload(group.key)}
+                disabled={uploadingKey === group.key}
+                title="Cambiar imagen principal"
+                aria-label="Cambiar imagen principal"
+              >
+                {uploadingKey === group.key ? "…" : !group.official.heroImageUrl && "+"}
+              </button>
+              <div style={{ flex: 1 }}>
+                <h3 className="brew-group-title">{group.official.title}</h3>
+                <span className="brew-group-meta">
+                  {group.official.style} · Batch {group.official.batchNumber} oficial · {group.tryCount}{" "}
+                  {group.tryCount === 1 ? "intento en total" : "intentos en total"}
+                </span>
+              </div>
+              <Link className="btn" href={`/admin/brews/recipe/edit?groupId=${group.key}`}>
+                Editar receta
+              </Link>
+              <Link className="btn" href={`/admin/brews/edit?id=${group.official.id}`}>
+                Editar batch
+              </Link>
+              <Link className="btn" href="/admin/experiments">
+                Ver experimentos
+              </Link>
+              <button type="button" className="btn" onClick={() => unpublish(group.official)}>
+                Despublicar
+              </button>
+              <button type="button" className="btn danger" onClick={() => remove(group.official)}>
+                Eliminar
+              </button>
+            </header>
+          </section>
+        ))
       )}
     </>
   );
