@@ -168,9 +168,7 @@ export default function AdminIdeasPage() {
             </div>
 
             <div className="modal-body">
-              <p className="modal-label" style={{ marginTop: 16 }}>
-                Estilo
-              </p>
+              <p className="modal-label">Estilo</p>
               <p>
                 {preview.style || "Sin definir"}
                 {preview.targetAbv ? ` · ABV objetivo ~${preview.targetAbv}% (sin confirmar)` : ""}

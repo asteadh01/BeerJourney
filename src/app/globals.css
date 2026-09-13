@@ -1105,16 +1105,34 @@ button.image-upload-preview:hover {
 .modal-close:hover { color: var(--ink); }
 
 .modal-label {
-  font-family: var(--font-body), sans-serif;
-  font-size: 0.68rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--ink-dim);
+  letter-spacing: 0.06em;
+  color: var(--hop-deep);
   font-weight: 700;
-  margin: 18px 0 6px;
+  margin: 0;
+  padding: 16px 0 8px;
+  border-top: 2px dashed var(--line-soft);
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
-.modal-label:first-of-type { margin-top: 0; }
+.modal-label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex: none;
+}
+
+.modal-label:first-of-type {
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: none;
+}
 
 .modal-body p {
   font-size: 0.88rem;
