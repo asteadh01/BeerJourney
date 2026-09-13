@@ -1783,6 +1783,31 @@ button.image-upload-preview:hover {
   color: var(--ink-dim);
 }
 
+.idea-card-other {
+  font-size: 0.72rem;
+  font-style: italic;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  margin-left: 30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.idea-card-other::before { content: "✨ "; font-style: normal; }
+
+.other-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.other-list li {
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.55;
+  margin-bottom: 4px;
+}
+
 .idea-card-actions {
   display: flex;
   gap: 8px;

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { deleteIdea, watchIdeas } from "@/lib/ideas";
 import { getProfile } from "@/lib/profiles";
+import { useAuth } from "@/lib/useAuth";
 import type { Idea, IdeaStatus } from "@/lib/types";
 
 const FILTERS: { key: "todas" | IdeaStatus; label: string }[] = [
@@ -24,6 +25,7 @@ function initials(name: string): string {
 }
 
 export default function AdminIdeasPage() {
+  const { user } = useAuth();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [authors, setAuthors] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<"todas" | IdeaStatus>("todas");
@@ -38,10 +40,14 @@ export default function AdminIdeasPage() {
     Promise.all(
       missing.map(async (uid) => {
         const profile = await getProfile(uid);
-        return [uid, profile?.displayName || "?"] as const;
+        if (profile?.displayName) return [uid, profile.displayName] as const;
+        // No profile saved yet — fall back to the session's own email
+        // (asteadh01@… → "asteadh01") rather than showing a bare "?".
+        if (uid === user?.uid && user?.email) return [uid, user.email.split("@")[0]] as const;
+        return [uid, "Cervecero"] as const;
       }),
     ).then((entries) => setAuthors((prev) => ({ ...prev, ...Object.fromEntries(entries) })));
-  }, [ideas, authors]);
+  }, [ideas, authors, user]);
 
   const filtered = useMemo(
     () => (filter === "todas" ? ideas : ideas.filter((i) => i.status === filter)),
@@ -112,7 +118,7 @@ export default function AdminIdeasPage() {
                 {idea.targetAbv ? ` · ABV objetivo ~${idea.targetAbv}% (sin confirmar)` : ""}
               </p>
               {idea.why && <p className="idea-card-why">{idea.why}</p>}
-              {(idea.maltBill.length > 0 || idea.hopSchedule.length > 0 || idea.otherIngredients.length > 0) && (
+              {(idea.maltBill.length > 0 || idea.hopSchedule.length > 0) && (
                 <div className="idea-tags">
                   {idea.maltBill.map((m, i) => (
                     <span key={`m${i}`}>{m.ingredient}</span>
@@ -120,10 +126,10 @@ export default function AdminIdeasPage() {
                   {idea.hopSchedule.map((h, i) => (
                     <span key={`h${i}`}>{h.hop}</span>
                   ))}
-                  {idea.otherIngredients.map((o, i) => (
-                    <span key={`o${i}`}>{o}</span>
-                  ))}
                 </div>
+              )}
+              {idea.otherIngredients.length > 0 && (
+                <p className="idea-card-other">{idea.otherIngredients.join(", ")}</p>
               )}
               <div className="idea-card-actions" onClick={(e) => e.stopPropagation()}>
                 {idea.status === "convertida" && idea.experimentGroupId ? (
@@ -180,37 +186,47 @@ export default function AdminIdeasPage() {
               {preview.maltBill.length > 0 && (
                 <>
                   <p className="modal-label">Maltas</p>
-                  <div className="idea-tags">
-                    {preview.maltBill.map((m, i) => (
-                      <span key={i}>
-                        {m.ingredient} — {m.amount} {m.unit}
-                      </span>
-                    ))}
-                  </div>
+                  <table className="malt-bill">
+                    <tbody>
+                      {preview.maltBill.map((m, i) => (
+                        <tr key={i}>
+                          <td>{m.ingredient}</td>
+                          <td className="num">
+                            {m.amount} {m.unit}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </>
               )}
 
               {preview.hopSchedule.length > 0 && (
                 <>
                   <p className="modal-label">Lúpulos</p>
-                  <div className="idea-tags">
-                    {preview.hopSchedule.map((h, i) => (
-                      <span key={i}>
-                        {h.hop} — {h.amount} {h.unit}
-                      </span>
-                    ))}
-                  </div>
+                  <table className="malt-bill">
+                    <tbody>
+                      {preview.hopSchedule.map((h, i) => (
+                        <tr key={i}>
+                          <td>{h.hop}</td>
+                          <td className="num">
+                            {h.amount} {h.unit}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </>
               )}
 
               {preview.otherIngredients.length > 0 && (
                 <>
                   <p className="modal-label">Otros ingredientes</p>
-                  <div className="idea-tags">
+                  <ul className="other-list">
                     {preview.otherIngredients.map((o, i) => (
-                      <span key={i}>{o}</span>
+                      <li key={i}>{o}</li>
                     ))}
-                  </div>
+                  </ul>
                 </>
               )}
 
