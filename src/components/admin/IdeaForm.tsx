@@ -78,8 +78,12 @@ export function IdeaForm({ ideaId, initial }: IdeaFormProps) {
   }
 
   function cleanDraft(): Draft {
+    // Firestore rejects an explicit `undefined` field value (unlike a
+    // missing key), so an unset optional number can't just be spread in.
+    const { targetAbv, ...rest } = draft;
     return {
-      ...draft,
+      ...rest,
+      ...(targetAbv !== undefined ? { targetAbv } : {}),
       maltBill: draft.maltBill.filter((m) => m.ingredient.trim()),
       hopSchedule: draft.hopSchedule.filter((h) => h.hop.trim()),
       otherIngredients: draft.otherIngredients.filter((o) => o.trim()),
