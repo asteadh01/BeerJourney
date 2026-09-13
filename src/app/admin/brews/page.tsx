@@ -108,28 +108,30 @@ export default function AdminBrewsPage() {
               >
                 {uploadingKey === group.key ? "…" : !group.official.heroImageUrl && "+"}
               </button>
-              <div style={{ flex: 1 }}>
+              <div className="brew-group-title-wrap">
                 <h3 className="brew-group-title">{group.official.title}</h3>
                 <span className="brew-group-meta">
                   {group.official.style} · Batch {group.official.batchNumber} oficial · {group.tryCount}{" "}
                   {group.tryCount === 1 ? "intento en total" : "intentos en total"}
                 </span>
               </div>
-              <Link className="btn" href={`/admin/brews/recipe/edit?groupId=${group.key}`}>
-                Editar receta
-              </Link>
-              <Link className="btn" href={`/admin/brews/edit?id=${group.official.id}`}>
-                Editar batch
-              </Link>
-              <Link className="btn" href="/admin/experiments">
-                Ver experimentos
-              </Link>
-              <button type="button" className="btn" onClick={() => unpublish(group.official)}>
-                Despublicar
-              </button>
-              <button type="button" className="btn danger" onClick={() => remove(group.official)}>
-                Eliminar
-              </button>
+              <div className="brew-group-actions">
+                <Link className="btn" href={`/admin/brews/recipe/edit?groupId=${group.key}`}>
+                  Editar receta
+                </Link>
+                <Link className="btn" href={`/admin/brews/edit?id=${group.official.id}`}>
+                  Editar batch
+                </Link>
+                <Link className="btn" href="/admin/experiments">
+                  Ver experimentos
+                </Link>
+                <button type="button" className="btn" onClick={() => unpublish(group.official)}>
+                  Despublicar
+                </button>
+                <button type="button" className="btn danger" onClick={() => remove(group.official)}>
+                  Eliminar
+                </button>
+              </div>
             </header>
           </section>
         ))
