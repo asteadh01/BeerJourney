@@ -12,9 +12,17 @@ service cloud.firestore {
         ];
     }
 
+    // Brews are public regardless of status: published ones are the
+    // official "Cervezas" entry for a recipe, drafts are its visible
+    // "Experimentos" iteration history. Only Ideas stay admin-only.
     match /brews/{brewId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
+      allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // Ideas are pure R&D notes — never shown outside the admin panel.
+    match /ideas/{ideaId} {
+      allow read, write: if isAdmin();
     }
 
     // Brewer profile (display name, bio, avatar): public read for the About

@@ -4,67 +4,40 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "@/lib/firebase";
-import { deleteBrew, updateBrew, updateRecipeHeroImage, watchAllBrews } from "@/lib/brews";
+import { deleteBrew, groupBrewsByRecipe, updateBrew, updateRecipeHeroImage, watchAllBrews } from "@/lib/brews";
 import type { Brew } from "@/lib/types";
 
 interface BrewGroup {
   key: string;
-  title: string;
-  style: string;
-  heroImageUrl?: string;
-  latestBatchId: string;
-  batches: Brew[];
+  official: Brew;
+  tryCount: number;
 }
 
-function groupByRecipe(brews: Brew[]): BrewGroup[] {
-  const byKey = new Map<string, Brew[]>();
-  for (const brew of brews) {
-    const key = brew.recipeGroupId || brew.id;
-    byKey.set(key, [...(byKey.get(key) ?? []), brew]);
-  }
+// Cervezas shows one card per recipe — whichever batch is currently
+// published, not every batch in the recipe's history (that's Experimentos).
+function officialGroups(brews: Brew[]): BrewGroup[] {
+  const groups = groupBrewsByRecipe(brews)
+    .map(({ key, batches }) => {
+      const published = batches.filter((b) => b.status === "published");
+      const official = published[published.length - 1];
+      return official ? { key, official, tryCount: batches.length } : null;
+    })
+    .filter((g): g is BrewGroup => g !== null);
 
-  const groups = Array.from(byKey.entries()).map(([key, batches]) => {
-    const sorted = [...batches].sort((a, b) => a.batchNumber - b.batchNumber);
-    const latest = sorted[sorted.length - 1];
-    return {
-      key,
-      title: latest.title,
-      style: latest.style,
-      heroImageUrl: latest.heroImageUrl,
-      latestBatchId: latest.id,
-      batches: sorted,
-    };
-  });
-
-  return groups.sort((a, b) => {
-    const aLatest = a.batches[a.batches.length - 1];
-    const bLatest = b.batches[b.batches.length - 1];
-    return bLatest.batchNumber - aLatest.batchNumber;
-  });
+  return groups.sort((a, b) => b.official.batchNumber - a.official.batchNumber);
 }
 
 export default function AdminBrewsPage() {
   const [brews, setBrews] = useState<Brew[]>([]);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [previewKey, setPreviewKey] = useState<string | null>(null);
   const thumbInputRef = useRef<HTMLInputElement>(null);
   const pendingGroupKey = useRef<string | null>(null);
 
   useEffect(() => watchAllBrews(setBrews), []);
 
-  const groups = useMemo(() => groupByRecipe(brews), [brews]);
-
-  function toggleCollapsed(key: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }
+  const groups = useMemo(() => officialGroups(brews), [brews]);
+  const preview = groups.find((g) => g.key === previewKey)?.official ?? null;
 
   function openThumbUpload(groupKey: string) {
     pendingGroupKey.current = groupKey;
@@ -88,8 +61,8 @@ export default function AdminBrewsPage() {
     }
   }
 
-  async function togglePublish(brew: Brew) {
-    await updateBrew(brew.id, { status: brew.status === "published" ? "draft" : "published" });
+  async function unpublish(brew: Brew) {
+    await updateBrew(brew.id, { status: "draft" });
   }
 
   async function remove(brew: Brew) {
@@ -101,10 +74,11 @@ export default function AdminBrewsPage() {
     <>
       <div className="admin-head">
         <h2>Cervezas</h2>
-        <Link className="btn primary" href="/admin/brews/new">
-          + Nueva cocción
-        </Link>
       </div>
+      <p style={{ color: "var(--ink-dim)", fontSize: "0.85rem", marginTop: -8, marginBottom: 20 }}>
+        Una tarjeta por receta — la que está marcada como oficial. Las cocciones nuevas y los demás intentos se
+        arrancan y se manejan desde <Link href="/admin/experiments">Experimentos</Link>.
+      </p>
       <input
         ref={thumbInputRef}
         type="file"
@@ -117,72 +91,163 @@ export default function AdminBrewsPage() {
         }}
       />
       {groups.length === 0 ? (
-        <div className="empty-state">Todavía no hay cocciones. Registrá tu primera cerveza.</div>
+        <div className="empty-state">
+          Todavía no hay cervezas oficiales — marcá un intento como oficial desde{" "}
+          <Link href="/admin/experiments">Experimentos</Link>.
+        </div>
       ) : (
-        groups.map((group) => {
-          const isCollapsed = collapsed.has(group.key);
-          return (
-            <section className="brew-group" key={group.key}>
-              <header className="brew-group-header">
-                <button
-                  type="button"
-                  className="row-thumb row-thumb-upload"
-                  style={group.heroImageUrl ? { backgroundImage: `url(${group.heroImageUrl})` } : undefined}
-                  onClick={() => openThumbUpload(group.key)}
-                  disabled={uploadingKey === group.key}
-                  title="Cambiar imagen principal"
-                  aria-label="Cambiar imagen principal"
-                >
-                  {uploadingKey === group.key ? "…" : !group.heroImageUrl && "+"}
-                </button>
-                <div style={{ flex: 1 }}>
-                  <h3 className="brew-group-title">{group.title}</h3>
-                  <span className="brew-group-meta">
-                    {group.style} · {group.batches.length} {group.batches.length === 1 ? "batch" : "batches"}
-                  </span>
-                </div>
+        groups.map((group) => (
+          <section
+            className="brew-group"
+            key={group.key}
+            onClick={() => setPreviewKey(group.key)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setPreviewKey(group.key);
+              }
+            }}
+          >
+            <header className="brew-group-header">
+              <button
+                type="button"
+                className="row-thumb row-thumb-upload"
+                style={group.official.heroImageUrl ? { backgroundImage: `url(${group.official.heroImageUrl})` } : undefined}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openThumbUpload(group.key);
+                }}
+                disabled={uploadingKey === group.key}
+                title="Cambiar imagen principal"
+                aria-label="Cambiar imagen principal"
+              >
+                {uploadingKey === group.key ? "…" : !group.official.heroImageUrl && "+"}
+              </button>
+              <div className="brew-group-title-wrap">
+                <h3 className="brew-group-title">{group.official.title}</h3>
+                <span className="brew-group-meta">
+                  {group.official.style} · Batch {group.official.batchNumber} oficial · {group.tryCount}{" "}
+                  {group.tryCount === 1 ? "intento en total" : "intentos en total"}
+                </span>
+              </div>
+              <div className="brew-group-actions" onClick={(e) => e.stopPropagation()}>
                 <Link className="btn" href={`/admin/brews/recipe/edit?groupId=${group.key}`}>
-                  Editar
+                  Editar descripción
                 </Link>
-                <Link className="btn" href={`/admin/brews/new?fromId=${group.latestBatchId}`}>
-                  + Nuevo batch
+                <Link className="btn" href="/admin/experiments">
+                  Ver experimentos
                 </Link>
-                <button
-                  type="button"
-                  className="brew-group-toggle"
-                  onClick={() => toggleCollapsed(group.key)}
-                  aria-expanded={!isCollapsed}
-                >
-                  {isCollapsed ? "Mostrar batches ▾" : "Ocultar batches ▴"}
+                <button type="button" className="btn" onClick={() => unpublish(group.official)}>
+                  Despublicar
                 </button>
-              </header>
-              {!isCollapsed && (
-                <div className="brew-group-batches">
-                  {group.batches.map((brew) => (
-                    <div className="brew-batch-row" key={brew.id}>
-                      <span className="brew-batch-label">Batch {brew.batchNumber}</span>
-                      <span className="brew-batch-abv">{brew.abv}% ABV</span>
-                      <span className={`status-pill ${brew.status}`}>
-                        {brew.status === "published" ? "Publicada" : "Borrador"}
-                      </span>
-                      <div className="row-actions">
-                        <Link className="btn" href={`/admin/brews/edit?id=${brew.id}`}>
-                          Editar
-                        </Link>
-                        <button className="btn" onClick={() => togglePublish(brew)}>
-                          {brew.status === "published" ? "Despublicar" : "Publicar"}
-                        </button>
-                        <button className="btn danger" onClick={() => remove(brew)}>
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <button type="button" className="btn danger" onClick={() => remove(group.official)}>
+                  Eliminar
+                </button>
+              </div>
+            </header>
+          </section>
+        ))
+      )}
+
+      {preview && (
+        <div className="modal-overlay" onClick={() => setPreviewKey(null)}>
+          <div className="modal-panel xwide" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+              <div>
+                <h3 style={{ marginBottom: 2 }}>Vista previa pública</h3>
+                <span style={{ color: "var(--ink-dim)", fontSize: "0.78rem" }}>Así la ve cualquiera en el sitio</span>
+              </div>
+              <button className="modal-close" onClick={() => setPreviewKey(null)} aria-label="Cerrar">
+                ×
+              </button>
+            </div>
+
+            <section className="detail-hero" style={{ marginTop: 18 }}>
+              <div
+                className="detail-img"
+                style={preview.heroImageUrl ? { backgroundImage: `url(${preview.heroImageUrl})` } : undefined}
+              >
+                <span className="badge">Cocción №{String(preview.batchNumber).padStart(3, "0")}</span>
+              </div>
+              <div className="detail-copy">
+                <span className="style">{preview.style}</span>
+                <h1 style={{ fontSize: "1.6rem" }}>{preview.title}</h1>
+                <p>{preview.description}</p>
+                <div className="spec-grid">
+                  <div className="spec">
+                    <div className="v">{preview.abv}%</div>
+                    <div className="l">ABV</div>
+                  </div>
+                  <div className="spec">
+                    <div className="v">{preview.ibu}</div>
+                    <div className="l">IBU</div>
+                  </div>
+                  <div className="spec">
+                    <div className="v">{preview.og}</div>
+                    <div className="l">OG</div>
+                  </div>
+                  <div className="spec">
+                    <div className="v">{preview.fg}</div>
+                    <div className="l">FG</div>
+                  </div>
                 </div>
-              )}
+              </div>
             </section>
-          );
-        })
+
+            <section className="detail-body">
+              <div className="detail-col">
+                <h3>Proceso</h3>
+                <ol className="process-steps">
+                  {preview.processSteps.map((step) => (
+                    <li key={step.order}>
+                      <span className="step-n">{String(step.order).padStart(2, "0")}</span>
+                      {step.text}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="detail-col">
+                <h3>Maltas</h3>
+                <table className="malt-bill">
+                  <tbody>
+                    {preview.maltBill.map((m, i) => (
+                      <tr key={i}>
+                        <td>{m.ingredient}</td>
+                        <td className="num">
+                          {m.amount} {m.unit}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <h3>Lúpulos</h3>
+                <table className="malt-bill">
+                  <tbody>
+                    {preview.hopSchedule.map((h, i) => (
+                      <tr key={i}>
+                        <td>{h.hop}</td>
+                        <td className="num">
+                          {h.amount} {h.unit}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <div className="modal-actions">
+              <Link className="btn primary" href={`/brew?slug=${preview.slug}`} target="_blank" rel="noopener noreferrer">
+                Ver página completa →
+              </Link>
+              <button className="btn" onClick={() => setPreviewKey(null)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

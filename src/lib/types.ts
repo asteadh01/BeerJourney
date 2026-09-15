@@ -49,6 +49,34 @@ export interface Brew {
   recipeGroupId: string;
   // Id of the batch this one was created "as a new batch of", if any.
   previousBatchId: string;
+  // Idea this recipe started from, if any (see lib/ideas.ts).
+  ideaId?: string;
+  // What changed in this attempt vs. the previous batch — the note that
+  // separates one try from the next while a recipe is still being dialed in.
+  changeNote?: string;
+}
+
+export type IdeaStatus = "activa" | "convertida" | "descartada";
+
+export interface Idea {
+  id: string;
+  title: string;
+  style: string;
+  // Aspirational, unconfirmed — nothing has actually been brewed yet.
+  targetAbv?: number;
+  why: string;
+  maltBill: MaltBillItem[];
+  hopSchedule: HopAddition[];
+  // Anything that isn't malt or hops: spices, fruit, wild yeast, scents, etc.
+  otherIngredients: string[];
+  notes: string;
+  status: IdeaStatus;
+  // Set once "Convertir en experimento" creates the first Brew — points at
+  // that Brew's recipeGroupId so the idea can link back to its timeline.
+  experimentGroupId?: string;
+  createdBy: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 // One gravity measurement taken during fermentation of a batch (e.g. "day 7:
