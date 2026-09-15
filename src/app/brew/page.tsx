@@ -217,7 +217,7 @@ function BrewDetail() {
               placeholder="Tu nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={{ maxWidth: 160 }}
+              className="comment-form-name"
               maxLength={40}
               required
             />
