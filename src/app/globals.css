@@ -869,14 +869,14 @@ a { color: inherit; }
 
 .comment-form {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   margin-top: 20px;
 }
 
 .comment-form input {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   padding: 10px 16px;
   border-radius: var(--r-full);
   border: 2px solid var(--line);
@@ -887,9 +887,27 @@ a { color: inherit; }
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.comment-form-name { max-width: 160px; }
+.comment-form-name { max-width: 280px; }
+
+.comment-form-textarea {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  min-height: 44px;
+  max-height: 320px;
+  padding: 10px 16px;
+  border-radius: var(--r-lg);
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
 
 .comment-form input:focus,
+.comment-form-textarea:focus,
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
@@ -2050,8 +2068,9 @@ button.image-upload-preview:hover {
 
   .nav a.navlink.active { background: oklch(100% 0 0 / 0.08); }
 
-  .comment-form-name { max-width: none; flex-basis: 100%; }
-  .comment-form input { min-height: 44px; }
+  .comment-form-name { max-width: none; }
+  .comment-form input,
+  .comment-form-textarea { min-height: 44px; }
   .comment-form .btn { width: 100%; justify-content: center; }
 }
 

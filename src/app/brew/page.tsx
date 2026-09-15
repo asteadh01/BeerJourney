@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { SiteNav } from "@/components/SiteNav";
@@ -21,6 +21,7 @@ function BrewDetail() {
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [posting, setPosting] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const fetchedBrew = fetchResult?.slug === slug ? fetchResult.brew : undefined;
   const brew = sample ?? fetchedBrew;
@@ -46,6 +47,12 @@ function BrewDetail() {
     getBrewsByRecipeGroup(brew.recipeGroupId).then((batches) => setTryCount(batches.length));
   }, [brew]);
 
+  function handleTextChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setText(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!brew || brew.id.startsWith("sample-") || !name.trim() || !text.trim()) return;
@@ -53,6 +60,7 @@ function BrewDetail() {
     try {
       await addComment(brew.id, name.trim(), text.trim());
       setText("");
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
     } finally {
       setPosting(false);
     }
@@ -221,11 +229,14 @@ function BrewDetail() {
               maxLength={40}
               required
             />
-            <input
+            <textarea
+              ref={textareaRef}
               aria-label="Nota sobre esta cocción"
               placeholder="Dejá una nota sobre esta cocción…"
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={handleTextChange}
+              className="comment-form-textarea"
+              rows={1}
               maxLength={500}
               required
             />
