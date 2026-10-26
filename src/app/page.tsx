@@ -30,7 +30,7 @@ export default function HomePage() {
               alt="Dos amigos brindando con jarras de cerveza artesanal"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: "cover", objectPosition: "center top" }}
+              style={{ objectFit: "cover", objectPosition: "center 25%" }}
               priority
             />
           </div>
