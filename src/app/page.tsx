@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 
@@ -23,7 +24,16 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <div className="hero-visual" aria-hidden="true" />
+          <div className="hero-visual">
+            <Image
+              src="/hero-founders.jpg"
+              alt="Dos amigos brindando con jarras de cerveza artesanal"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              style={{ objectFit: "cover", objectPosition: "center top" }}
+              priority
+            />
+          </div>
         </section>
 
         <div className="section-head">
